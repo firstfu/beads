@@ -29,6 +29,10 @@ struct beadsApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .onAppear {
+                    let context = sharedModelContainer.mainContext
+                    MantraSeedData.seedIfNeeded(modelContext: context)
+                }
         }
         .modelContainer(sharedModelContainer)
     }
