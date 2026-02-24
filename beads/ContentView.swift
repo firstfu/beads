@@ -9,23 +9,30 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-
     var body: some View {
-        NavigationStack {
-            VStack {
-                Text("念珠")
-                    .font(.largeTitle)
-                Text("Buddhist Bead Counter")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+        TabView {
+            Tab("修行", systemImage: "circle.circle") {
+                PracticeView()
             }
-            .navigationTitle("念珠")
+            Tab("記錄", systemImage: "chart.bar") {
+                RecordsView()
+            }
+            Tab("經藏", systemImage: "book") {
+                ScriptureView()
+            }
+            Tab("設定", systemImage: "gearshape") {
+                SettingsView()
+            }
         }
     }
 }
 
 #Preview {
     ContentView()
-        .modelContainer(for: PracticeSession.self, inMemory: true)
+        .modelContainer(for: [
+            PracticeSession.self,
+            DailyRecord.self,
+            Mantra.self,
+            UserSettings.self,
+        ], inMemory: true)
 }
