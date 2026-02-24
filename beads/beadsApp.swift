@@ -12,7 +12,10 @@ import SwiftData
 struct beadsApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            PracticeSession.self,
+            DailyRecord.self,
+            Mantra.self,
+            UserSettings.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
