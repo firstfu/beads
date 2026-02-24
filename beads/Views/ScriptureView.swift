@@ -6,12 +6,18 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ScriptureView: View {
+    @Environment(\.modelContext) private var modelContext
+
     var body: some View {
         NavigationStack {
-            Text("經藏")
+            MantraListView()
                 .navigationTitle("經藏")
+                .onAppear {
+                    MantraSeedData.seedIfNeeded(modelContext: modelContext)
+                }
         }
     }
 }
