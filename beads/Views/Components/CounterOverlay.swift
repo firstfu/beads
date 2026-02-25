@@ -29,6 +29,14 @@ struct CounterOverlay: View {
     /// 視圖主體
     var body: some View {
         VStack {
+            // 蓮花裝飾
+            HStack {
+                Spacer()
+                LotusView(color: BeadsTheme.Colors.accent.opacity(0.5), size: 28)
+                Spacer()
+            }
+            .padding(.top, 4)
+
             // 頂部列 — 顯示咒語名稱
             HStack {
                 Text(mantraName)
