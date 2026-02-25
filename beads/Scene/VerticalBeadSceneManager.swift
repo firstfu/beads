@@ -47,6 +47,9 @@ final class VerticalBeadSceneManager {
     /// 拖曳手勢累計平移量
     var panTranslation: Float = 0
 
+    /// 攝影機正交投影縮放值（半高度）
+    private let orthoScale: Float = 2.5
+
     /// 目前高亮的佛珠索引，變更時自動觸發高亮更新
     var currentBeadIndex: Int = 0 {
         didSet { highlightCurrentBead() }
@@ -75,10 +78,11 @@ final class VerticalBeadSceneManager {
             scene.background.contents = UIColor.black
         #endif
 
-        // 攝影機 — 定位以完整呈現垂直佛珠列
+        // 攝影機 — 正交投影，消除透視畸變，所有佛珠呈現相同大小
         let cameraNode = SCNNode()
         cameraNode.camera = SCNCamera()
-        cameraNode.camera?.fieldOfView = 45
+        cameraNode.camera?.usesOrthographicProjection = true
+        cameraNode.camera?.orthographicScale = Double(orthoScale)
         cameraNode.position = SCNVector3(0, 0, 6)
         cameraNode.name = "camera"
         scene.rootNode.addChildNode(cameraNode)
@@ -114,6 +118,11 @@ final class VerticalBeadSceneManager {
 
         createBeads()
         createString()
+
+        // 設定初始偏移，讓第一顆佛珠在畫面頂部附近，佛珠填滿整個可見區域
+        let initialOffset = orthoScale - beadRadius
+        panTranslation = initialOffset
+        beadColumnNode.position = SCNVector3(0, initialOffset, 0)
     }
 
     /// 建立佛珠垂直排列
@@ -166,13 +175,27 @@ final class VerticalBeadSceneManager {
     }
 
     /// 高亮顯示目前佛珠
-    /// 將目前佛珠放大至 1.3 倍，其餘佛珠恢復原始大小，帶 0.15 秒動畫
+    /// 為目前佛珠加上金色發光效果，其餘佛珠移除發光，帶 0.15 秒動畫
     private func highlightCurrentBead() {
         for (i, node) in beadNodes.enumerated() {
-            let scale: Float = (i == currentBeadIndex) ? 1.3 : 1.0
+            guard let material = node.geometry?.materials.first else { continue }
             SCNTransaction.begin()
             SCNTransaction.animationDuration = 0.15
-            node.scale = SCNVector3(scale, scale, scale)
+            if i == currentBeadIndex {
+                #if os(macOS)
+                    material.emission.contents = NSColor(red: 0.8, green: 0.6, blue: 0.2, alpha: 1.0)
+                #else
+                    material.emission.contents = UIColor(red: 0.8, green: 0.6, blue: 0.2, alpha: 1.0)
+                #endif
+                material.emission.intensity = 0.4
+            } else {
+                #if os(macOS)
+                    material.emission.contents = NSColor.black
+                #else
+                    material.emission.contents = UIColor.black
+                #endif
+                material.emission.intensity = 0.0
+            }
             SCNTransaction.commit()
         }
     }

@@ -54,6 +54,12 @@ struct beadsApp: App {
                 .onAppear {
                     let context = sharedModelContainer.mainContext
                     MantraSeedData.seedIfNeeded(modelContext: context)
+                    // 確保 UserSettings 存在，讓首次開啟 app 時背景音樂能正常播放
+                    let descriptor = FetchDescriptor<UserSettings>()
+                    if (try? context.fetch(descriptor).first) == nil {
+                        context.insert(UserSettings())
+                        try? context.save()
+                    }
                 }
         }
         .modelContainer(sharedModelContainer)

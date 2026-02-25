@@ -81,6 +81,7 @@ struct PracticeView: View {
                 streakDays: viewModel.streakDays,
                 mantraName: viewModel.mantraName
             )
+            .allowsHitTesting(false)
 
             // 「功德+1」彈出動畫
             if showMeritPopup {
