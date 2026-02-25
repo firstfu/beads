@@ -17,6 +17,9 @@ struct PracticeView: View {
         }
         return .circular
     }
+    private var fastScrollMode: Bool {
+        allSettings.first?.fastScrollMode ?? false
+    }
 
     @State private var viewModel = PracticeViewModel()
     @State private var sceneManager = BeadSceneManager()
@@ -34,12 +37,12 @@ struct PracticeView: View {
             if displayMode == .vertical {
                 VerticalBeadSceneView(sceneManager: verticalSceneManager, onBeadAdvance: {
                     onBeadAdvance()
-                })
+                }, fastScrollMode: fastScrollMode)
                 .ignoresSafeArea()
             } else {
                 BeadSceneView(sceneManager: sceneManager, onBeadAdvance: {
                     onBeadAdvance()
-                })
+                }, fastScrollMode: fastScrollMode)
                 .ignoresSafeArea()
             }
 

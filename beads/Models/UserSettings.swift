@@ -69,6 +69,7 @@ final class UserSettings {
     var keepScreenOn: Bool
     var selectedAmbientTrack: String
     var displayMode: String = "圓環式"
+    var fastScrollMode: Bool = false
 
     init() {
         self.currentBeadStyle = "小葉紫檀"
@@ -81,5 +82,6 @@ final class UserSettings {
         self.keepScreenOn = true
         self.selectedAmbientTrack = AmbientTrack.meditation1.rawValue
         self.displayMode = BeadDisplayMode.circular.rawValue
+        self.fastScrollMode = false
     }
 }

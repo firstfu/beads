@@ -13,6 +13,7 @@ import SwiftUI
     struct BeadSceneView: NSViewRepresentable {
         let sceneManager: BeadSceneManager
         var onBeadAdvance: (() -> Void)?
+        var fastScrollMode: Bool = false
 
         func makeNSView(context: Context) -> SCNView {
             let scnView = SCNView()
@@ -26,19 +27,22 @@ import SwiftUI
 
         func updateNSView(_ nsView: SCNView, context: Context) {
             context.coordinator.onBeadAdvance = onBeadAdvance
+            context.coordinator.fastScrollMode = fastScrollMode
         }
 
         func makeCoordinator() -> Coordinator {
-            Coordinator(sceneManager: sceneManager, onBeadAdvance: onBeadAdvance)
+            Coordinator(sceneManager: sceneManager, onBeadAdvance: onBeadAdvance, fastScrollMode: fastScrollMode)
         }
 
         class Coordinator: NSObject {
             let sceneManager: BeadSceneManager
             var onBeadAdvance: (() -> Void)?
+            var fastScrollMode: Bool
 
-            init(sceneManager: BeadSceneManager, onBeadAdvance: (() -> Void)?) {
+            init(sceneManager: BeadSceneManager, onBeadAdvance: (() -> Void)?, fastScrollMode: Bool) {
                 self.sceneManager = sceneManager
                 self.onBeadAdvance = onBeadAdvance
+                self.fastScrollMode = fastScrollMode
             }
         }
     }
@@ -48,6 +52,7 @@ import SwiftUI
     struct BeadSceneView: UIViewRepresentable {
         let sceneManager: BeadSceneManager
         var onBeadAdvance: (() -> Void)?
+        var fastScrollMode: Bool = false
 
         func makeUIView(context: Context) -> SCNView {
             let scnView = SCNView()
@@ -76,32 +81,47 @@ import SwiftUI
 
         func updateUIView(_ uiView: SCNView, context: Context) {
             context.coordinator.onBeadAdvance = onBeadAdvance
+            context.coordinator.fastScrollMode = fastScrollMode
         }
 
         func makeCoordinator() -> Coordinator {
-            Coordinator(sceneManager: sceneManager, onBeadAdvance: onBeadAdvance)
+            Coordinator(sceneManager: sceneManager, onBeadAdvance: onBeadAdvance, fastScrollMode: fastScrollMode)
         }
 
         class Coordinator: NSObject {
             let sceneManager: BeadSceneManager
             var onBeadAdvance: (() -> Void)?
+            var fastScrollMode: Bool
 
-            /// Track cumulative bead steps during a single pan gesture
+            /// Track cumulative bead steps during a single pan gesture (continuous mode)
             private var lastPanAngle: Float = 0
             private var accumulatedSteps: Int = 0
 
-            init(sceneManager: BeadSceneManager, onBeadAdvance: (() -> Void)?) {
+            /// Flick mode state
+            private var hasAdvancedThisGesture: Bool = false
+            private var isAnimating: Bool = false
+            private let flickThreshold: CGFloat = 30.0
+
+            init(sceneManager: BeadSceneManager, onBeadAdvance: (() -> Void)?, fastScrollMode: Bool) {
                 self.sceneManager = sceneManager
                 self.onBeadAdvance = onBeadAdvance
+                self.fastScrollMode = fastScrollMode
             }
 
             @objc func handlePan(_ gesture: UIPanGestureRecognizer) {
+                if fastScrollMode {
+                    handleContinuousPan(gesture)
+                } else {
+                    handleFlickPan(gesture)
+                }
+            }
+
+            /// Continuous mode: original behavior — sliding across multiple beads
+            private func handleContinuousPan(_ gesture: UIPanGestureRecognizer) {
                 guard let view = gesture.view else { return }
                 let translation = gesture.translation(in: view)
                 let viewHeight = view.bounds.height
 
-                // Convert vertical pan distance to rotation angle
-                // Swipe up = positive rotation (beads move forward)
                 let sensitivity: Float = 3.0
                 let panAngle = Float(-translation.y / viewHeight) * Float.pi * sensitivity
 
@@ -115,7 +135,6 @@ import SwiftUI
                     lastPanAngle = panAngle
                     sceneManager.rotateRing(by: delta)
 
-                    // Check if we've crossed a bead boundary
                     let totalSteps = Int(round(panAngle / sceneManager.anglePerBead))
                     let newSteps = totalSteps - accumulatedSteps
                     if newSteps > 0 {
@@ -126,8 +145,38 @@ import SwiftUI
                     }
 
                 case .ended, .cancelled:
-                    // Snap to nearest bead position
                     sceneManager.snapToNearestBead()
+
+                default:
+                    break
+                }
+            }
+
+            /// Flick mode: one bead per gesture — finger must lift before next advance
+            private func handleFlickPan(_ gesture: UIPanGestureRecognizer) {
+                guard let view = gesture.view else { return }
+                let translation = gesture.translation(in: view)
+
+                switch gesture.state {
+                case .began:
+                    hasAdvancedThisGesture = false
+
+                case .changed:
+                    let distance = abs(translation.y)
+                    if distance >= flickThreshold && !hasAdvancedThisGesture && !isAnimating {
+                        hasAdvancedThisGesture = true
+                        isAnimating = true
+                        sceneManager.animateBeadForward()
+                        onBeadAdvance?()
+
+                        // Cooldown slightly longer than animation duration (0.25s)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) { [weak self] in
+                            self?.isAnimating = false
+                        }
+                    }
+
+                case .ended, .cancelled:
+                    break
 
                 default:
                     break
@@ -136,8 +185,14 @@ import SwiftUI
 
             @objc func handleTap(_ gesture: UITapGestureRecognizer) {
                 guard gesture.state == .ended else { return }
+                guard !isAnimating else { return }
+                isAnimating = true
                 sceneManager.animateBeadForward()
                 onBeadAdvance?()
+
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) { [weak self] in
+                    self?.isAnimating = false
+                }
             }
         }
     }

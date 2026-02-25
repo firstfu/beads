@@ -22,7 +22,20 @@ struct beadsApp: App {
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+            // Schema migration failed — delete old store and recreate
+            let url = modelConfiguration.url
+            let fileManager = FileManager.default
+            let storeDir = url.deletingLastPathComponent()
+            let storeName = url.deletingPathExtension().lastPathComponent
+            for suffix in ["", "-wal", "-shm"] {
+                let fileURL = storeDir.appendingPathComponent(storeName + ".store" + suffix)
+                try? fileManager.removeItem(at: fileURL)
+            }
+            do {
+                return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            } catch {
+                fatalError("Could not create ModelContainer: \(error)")
+            }
         }
     }()
 

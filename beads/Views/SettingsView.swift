@@ -22,6 +22,7 @@ struct SettingsView: View {
     @State private var sfxVolume: Float = 0.8
     @State private var keepScreenOn: Bool = true
     @State private var displayMode: String = BeadDisplayMode.circular.rawValue
+    @State private var fastScrollMode: Bool = false
 
     var body: some View {
         NavigationStack {
@@ -33,6 +34,13 @@ struct SettingsView: View {
                         }
                     }
                     .pickerStyle(.segmented)
+                }
+
+                Section("撥珠手勢") {
+                    Toggle("快速撥珠模式", isOn: $fastScrollMode)
+                    Text("開啟後滑動可連續撥多顆珠，關閉時每次滑動只撥一顆")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
 
                 Section("佛珠樣式") {
@@ -105,6 +113,7 @@ struct SettingsView: View {
             .onChange(of: sfxVolume) { saveSettings() }
             .onChange(of: keepScreenOn) { saveSettings() }
             .onChange(of: displayMode) { saveSettings() }
+            .onChange(of: fastScrollMode) { saveSettings() }
         }
     }
 
@@ -129,6 +138,7 @@ struct SettingsView: View {
         sfxVolume = s.sfxVolume
         keepScreenOn = s.keepScreenOn
         displayMode = s.displayMode
+        fastScrollMode = s.fastScrollMode
     }
 
     private func saveSettings() {
@@ -143,6 +153,7 @@ struct SettingsView: View {
         s.sfxVolume = sfxVolume
         s.keepScreenOn = keepScreenOn
         s.displayMode = displayMode
+        s.fastScrollMode = fastScrollMode
         try? modelContext.save()
     }
 }
