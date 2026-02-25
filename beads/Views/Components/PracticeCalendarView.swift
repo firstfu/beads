@@ -1,3 +1,8 @@
+// MARK: - 檔案說明
+/// PracticeCalendarView.swift
+/// 修行日曆視圖 - 以熱力圖形式顯示近 35 天的修行記錄
+/// 模組：Views/Components
+
 //
 //  PracticeCalendarView.swift
 //  beads
@@ -7,9 +12,14 @@
 
 import SwiftUI
 
+/// 修行日曆視圖
+/// 以 7 欄 x 5 列的格狀熱力圖顯示近 35 天的每日修行記錄，
+/// 顏色深淺代表當日念誦數量的多寡
 struct PracticeCalendarView: View {
+    /// 每日修行記錄的陣列
     let records: [DailyRecord]
 
+    /// 視圖主體
     var body: some View {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
@@ -19,6 +29,7 @@ struct PracticeCalendarView: View {
                 .font(.headline)
                 .padding(.bottom, 4)
 
+            // 7 欄格狀熱力圖，顯示最近 35 天的修行記錄
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: 7), spacing: 3) {
                 ForEach(0..<35, id: \.self) { offset in
                     let date = calendar.date(byAdding: .day, value: -(34 - offset), to: today)!
@@ -32,6 +43,7 @@ struct PracticeCalendarView: View {
                 }
             }
 
+            // 圖例 — 顯示顏色深淺對應的數量等級
             HStack(spacing: 4) {
                 Text("少")
                     .font(.caption2)
@@ -49,6 +61,10 @@ struct PracticeCalendarView: View {
         }
     }
 
+    /// 根據念誦數量計算熱力圖顏色
+    /// 數量越多顏色越深（橘色），無記錄則顯示灰色
+    /// - Parameter count: 當日念誦數量
+    /// - Returns: 對應的顏色
     private func heatColor(for count: Int) -> Color {
         switch count {
         case 0: return Color(.systemGray5)

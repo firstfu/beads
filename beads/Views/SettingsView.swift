@@ -1,3 +1,8 @@
+// MARK: - 檔案說明
+/// SettingsView.swift
+/// 設定畫面 - 提供佛珠樣式、計數、音效、顯示等各項偏好設定的使用者介面
+/// 模組：Views
+
 //
 //  SettingsView.swift
 //  beads
@@ -8,25 +13,41 @@
 import SwiftUI
 import SwiftData
 
+/// 設定視圖，讓使用者調整佛珠顯示模式、材質、計數、音效、背景音樂等偏好設定
 struct SettingsView: View {
+    /// SwiftData 模型上下文，用於讀取和儲存使用者設定
     @Environment(\.modelContext) private var modelContext
+    /// 目前載入的使用者設定物件
     @State private var settings: UserSettings?
 
+    /// 目前選擇的佛珠材質樣式名稱
     @State private var currentBeadStyle: String = "小葉紫檀"
+    /// 每圈的珠子數量
     @State private var beadsPerRound: Int = 108
+    /// 是否啟用撥珠音效
     @State private var soundEnabled: Bool = true
+    /// 是否啟用觸感回饋
     @State private var hapticEnabled: Bool = true
+    /// 是否啟用背景音樂
     @State private var ambientSoundEnabled: Bool = true
+    /// 背景音樂音量（0.0 ~ 1.0）
     @State private var ambientVolume: Float = 0.5
+    /// 目前選擇的背景音樂曲目識別碼
     @State private var selectedAmbientTrack: String = AmbientTrack.meditation1.rawValue
+    /// 音效音量（0.0 ~ 1.0）
     @State private var sfxVolume: Float = 0.8
+    /// 是否在修行時保持螢幕常亮
     @State private var keepScreenOn: Bool = true
+    /// 佛珠顯示模式的原始值（環形或直列）
     @State private var displayMode: String = BeadDisplayMode.circular.rawValue
+    /// 是否啟用快速撥珠模式
     @State private var fastScrollMode: Bool = false
 
+    /// 主視圖內容，以表單形式呈現各項設定區段
     var body: some View {
         NavigationStack {
             Form {
+                // MARK: - 顯示模式設定
                 Section("顯示模式") {
                     Picker("佛珠排列", selection: $displayMode) {
                         ForEach(BeadDisplayMode.allCases) { mode in
@@ -36,6 +57,7 @@ struct SettingsView: View {
                     .pickerStyle(.segmented)
                 }
 
+                // MARK: - 撥珠手勢設定
                 Section("撥珠手勢") {
                     Toggle("快速撥珠模式", isOn: $fastScrollMode)
                     Text("開啟後滑動可連續撥多顆珠，關閉時每次滑動只撥一顆")
@@ -43,6 +65,7 @@ struct SettingsView: View {
                         .foregroundStyle(.secondary)
                 }
 
+                // MARK: - 佛珠樣式設定
                 Section("佛珠樣式") {
                     Picker("材質", selection: $currentBeadStyle) {
                         ForEach(BeadMaterialType.allCases) { material in
@@ -51,6 +74,7 @@ struct SettingsView: View {
                     }
                 }
 
+                // MARK: - 計數設定
                 Section("計數設定") {
                     Picker("每圈珠數", selection: $beadsPerRound) {
                         Text("18 顆").tag(18)
@@ -61,6 +85,7 @@ struct SettingsView: View {
                     }
                 }
 
+                // MARK: - 音效設定
                 Section("音效") {
                     Toggle("撥珠音效", isOn: $soundEnabled)
                     Toggle("觸感反饋", isOn: $hapticEnabled)
@@ -88,10 +113,12 @@ struct SettingsView: View {
                     }
                 }
 
+                // MARK: - 顯示設定
                 Section("顯示") {
                     Toggle("修行時螢幕常亮", isOn: $keepScreenOn)
                 }
 
+                // MARK: - 關於
                 Section("關於") {
                     HStack {
                         Text("版本")
@@ -117,6 +144,9 @@ struct SettingsView: View {
         }
     }
 
+    /// 從 SwiftData 載入使用者設定
+    /// - 若已有設定資料則直接使用，否則建立新的預設設定並存入資料庫
+    /// - 載入後將各欄位值同步至本地 @State 屬性
     private func loadSettings() {
         let descriptor = FetchDescriptor<UserSettings>()
         if let existing = try? modelContext.fetch(descriptor).first {
@@ -141,6 +171,7 @@ struct SettingsView: View {
         fastScrollMode = s.fastScrollMode
     }
 
+    /// 將目前本地 @State 屬性的值寫回 SwiftData 使用者設定物件並儲存
     private func saveSettings() {
         guard let s = settings else { return }
         s.currentBeadStyle = currentBeadStyle

@@ -1,3 +1,8 @@
+// MARK: - 檔案說明
+/// beadsApp.swift
+/// 應用程式入口 - 負責初始化 SwiftData 容器並設定根視圖
+/// 模組：App
+
 //
 //  beadsApp.swift
 //  beads
@@ -8,8 +13,11 @@
 import SwiftUI
 import SwiftData
 
+/// 佛珠念佛 App 的主入口結構體，負責配置資料持久化與根視圖
 @main
 struct beadsApp: App {
+    /// 共用的 SwiftData 模型容器，管理所有資料模型的持久化存儲
+    /// - Note: 若 Schema 遷移失敗，會自動刪除舊資料庫並重新建立
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             PracticeSession.self,
@@ -22,7 +30,7 @@ struct beadsApp: App {
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
-            // Schema migration failed — delete old store and recreate
+            // Schema 遷移失敗 — 刪除舊的資料庫檔案並重新建立
             let url = modelConfiguration.url
             let fileManager = FileManager.default
             let storeDir = url.deletingLastPathComponent()
@@ -39,6 +47,7 @@ struct beadsApp: App {
         }
     }()
 
+    /// 應用程式的主場景，設定根視圖為 ContentView 並注入模型容器
     var body: some Scene {
         WindowGroup {
             ContentView()

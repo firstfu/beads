@@ -5,14 +5,29 @@
 //  Created by firstfu on 2026/2/25.
 //
 
+// MARK: - 檔案說明
+
+/// MantraSeedData.swift
+/// 咒語種子資料 - 提供應用程式首次啟動時的預設咒語/佛號資料
+/// 模組：Services
+
 import SwiftData
 
+/// 咒語種子資料結構
+/// 負責在應用程式首次啟動時，將預設的咒語與佛號資料寫入資料庫
+/// 包含淨土宗常見佛號與各類常用咒語
 struct MantraSeedData {
+    /// 檢查並植入預設咒語資料
+    /// 若資料庫中尚無任何咒語記錄，則自動植入預設的佛號與咒語清單
+    /// 包含 9 筆預設資料，涵蓋淨土宗佛號及常見咒語
+    /// - Parameter modelContext: SwiftData 模型上下文，用於資料庫讀寫操作
     static func seedIfNeeded(modelContext: ModelContext) {
         let descriptor = FetchDescriptor<Mantra>()
         let count = (try? modelContext.fetchCount(descriptor)) ?? 0
         guard count == 0 else { return }
 
+        /// 預設咒語資料陣列
+        /// 每筆資料依序為：(名稱, 原文, 拼音, 說明, 分類, 建議次數, 排序順序)
         let mantras: [(String, String, String, String, String, Int, Int)] = [
             ("南無阿彌陀佛", "南無阿彌陀佛", "Nā mó ā mí tuó fó", "淨土宗核心佛號。稱念阿彌陀佛名號，祈願往生西方極樂世界。", "淨土宗", 108, 0),
             ("南無觀世音菩薩", "南無觀世音菩薩", "Nā mó guān shì yīn pú sà", "觀世音菩薩大慈大悲，救苦救難，聞聲救苦。", "淨土宗", 108, 1),

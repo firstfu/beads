@@ -1,3 +1,8 @@
+// MARK: - 檔案說明
+/// BeadSceneManager.swift
+/// 環形佛珠 3D 場景管理器 - 負責建立和管理環形排列的佛珠場景
+/// 模組：Scene
+
 //
 //  BeadSceneManager.swift
 //  beads
@@ -13,39 +18,54 @@ import SceneKit
     import UIKit
 #endif
 
+/// 環形佛珠場景管理器
+/// 負責建立 SceneKit 3D 場景，包含佛珠環形排列、材質設定、燈光配置、
+/// 母珠標記、佛珠高亮顯示及手勢驅動的旋轉動畫
 final class BeadSceneManager {
+    /// 場景物件，包含所有 3D 節點
     let scene: SCNScene
+    /// 所有佛珠節點的陣列
     private var beadNodes: [SCNNode] = []
+    /// 佛珠總數（使用者指定，上限 108）
     private let beadCount: Int
 
-    // Layout parameters
+    // MARK: - 排列參數
+
+    /// 圓環半徑
     private let circleRadius: Float = 2.0
+    /// 單顆佛珠半徑
     private let beadRadius: Float = 0.18
-    private let beadGap: Float = 0.06  // gap between beads
+    /// 佛珠之間的間隙
+    private let beadGap: Float = 0.06
+    /// 實際顯示在圓環上的佛珠數量（受圓周長限制）
     private var displayCount: Int = 0
 
-    /// Container node that holds all beads — rotated to simulate sliding
+    /// 佛珠環容器節點 - 旋轉此節點以模擬佛珠滑動效果
     private let beadRingNode = SCNNode()
 
-    /// Angle per bead step (radians)
+    /// 每顆佛珠對應的角度步幅（弧度），供手勢處理使用
     private(set) var anglePerBead: Float = 0
 
-    /// Accumulated rotation from pan gesture (radians)
+    /// 拖曳手勢累計旋轉量（弧度）
     var panRotation: Float = 0
 
+    /// 目前高亮的佛珠索引，變更時自動觸發高亮更新
     var currentBeadIndex: Int = 0 {
         didSet { highlightCurrentBead() }
     }
 
+    /// 目前佛珠材質類型，變更時自動套用新材質
     var materialType: BeadMaterialType = .zitan {
         didSet { applyMaterial() }
     }
 
+    /// 初始化環形佛珠場景管理器
+    /// - Parameter beadCount: 佛珠總數，預設 108，上限 108
     init(beadCount: Int = 108) {
         self.beadCount = min(beadCount, 108)
         self.scene = SCNScene()
 
-        // Calculate how many beads fit in the circle without overlapping
+        // 根據圓周長計算可容納的佛珠數量，避免重疊
         let circumference = 2.0 * Float.pi * circleRadius
         let beadDiameter = beadRadius * 2.0
         let spacePerBead = beadDiameter + beadGap
@@ -55,6 +75,8 @@ final class BeadSceneManager {
         setupScene()
     }
 
+    /// 設定場景基礎元素
+    /// 包含背景色、攝影機、環境光、主光源、補光燈，並呼叫建立佛珠和串線
     private func setupScene() {
         #if os(macOS)
             scene.background.contents = NSColor.black
@@ -62,7 +84,7 @@ final class BeadSceneManager {
             scene.background.contents = UIColor.black
         #endif
 
-        // Camera — positioned to frame the bead circle nicely
+        // 攝影機 — 定位以完整呈現佛珠圓環
         let cameraNode = SCNNode()
         cameraNode.camera = SCNCamera()
         cameraNode.camera?.fieldOfView = 55
@@ -70,7 +92,7 @@ final class BeadSceneManager {
         cameraNode.name = "camera"
         scene.rootNode.addChildNode(cameraNode)
 
-        // Ambient light — soft overall illumination
+        // 環境光 — 柔和的整體照明
         let ambientLight = SCNNode()
         ambientLight.light = SCNLight()
         ambientLight.light?.type = .ambient
@@ -82,7 +104,7 @@ final class BeadSceneManager {
         #endif
         scene.rootNode.addChildNode(ambientLight)
 
-        // Key light — main directional light with shadows
+        // 主光源 — 帶陰影的方向光
         let keyLight = SCNNode()
         keyLight.light = SCNLight()
         keyLight.light?.type = .directional
@@ -91,7 +113,7 @@ final class BeadSceneManager {
         keyLight.eulerAngles = SCNVector3(-Float.pi / 4, Float.pi / 4, 0)
         scene.rootNode.addChildNode(keyLight)
 
-        // Fill light — soften shadows
+        // 補光燈 — 柔化陰影
         let fillLight = SCNNode()
         fillLight.light = SCNLight()
         fillLight.light?.type = .directional
@@ -103,8 +125,10 @@ final class BeadSceneManager {
         createString()
     }
 
+    /// 建立佛珠環形排列
+    /// 在圓形軌道上均勻排列佛珠節點，並在頂部建立較大的母珠
     private func createBeads() {
-        // Add the ring container to the scene
+        // 將環形容器加入場景
         beadRingNode.name = "bead_ring"
         scene.rootNode.addChildNode(beadRingNode)
 
@@ -115,7 +139,7 @@ final class BeadSceneManager {
         materialType.applyTo(material)
         beadGeometry.materials = [material]
 
-        // Place beads evenly around the circle inside the ring container
+        // 將佛珠均勻分布在圓環容器內
         for i in 0..<displayCount {
             let angle = Float(i) / Float(displayCount) * Float.pi * 2 + Float.pi / 2
             let x = circleRadius * cos(angle)
@@ -128,7 +152,7 @@ final class BeadSceneManager {
             beadNodes.append(node)
         }
 
-        // Guru bead — larger, at the top (starting position)
+        // 母珠 — 較大顆，位於頂部（起始位置）
         let guruGeometry = SCNSphere(radius: CGFloat(beadRadius * 1.5))
         guruGeometry.segmentCount = 48
         let guruMaterial = SCNMaterial()
@@ -141,7 +165,8 @@ final class BeadSceneManager {
         beadRingNode.addChildNode(guruNode)
     }
 
-    /// Draw a thin torus as the string connecting the beads
+    /// 繪製串線
+    /// 使用細環面（Torus）作為連接佛珠的串線，串線不隨佛珠旋轉
     private func createString() {
         let torus = SCNTorus(ringRadius: CGFloat(circleRadius), pipeRadius: 0.015)
         let stringMaterial = SCNMaterial()
@@ -155,10 +180,12 @@ final class BeadSceneManager {
         let stringNode = SCNNode(geometry: torus)
         stringNode.eulerAngles = SCNVector3(Float.pi / 2, 0, 0)
         stringNode.name = "string"
-        // String stays in scene root (doesn't rotate with beads)
+        // 串線留在場景根節點（不隨佛珠旋轉）
         scene.rootNode.addChildNode(stringNode)
     }
 
+    /// 高亮顯示目前佛珠
+    /// 將目前佛珠放大至 1.3 倍，其餘佛珠恢復原始大小，帶 0.15 秒動畫
     private func highlightCurrentBead() {
         let displayIndex = currentBeadIndex % displayCount
 
@@ -171,6 +198,8 @@ final class BeadSceneManager {
         }
     }
 
+    /// 套用材質至所有佛珠
+    /// 將目前 materialType 的屬性套用到所有一般佛珠及母珠
     private func applyMaterial() {
         for node in beadNodes {
             if let geometry = node.geometry, let material = geometry.materials.first {
@@ -184,19 +213,22 @@ final class BeadSceneManager {
         }
     }
 
-    // MARK: - Ring Rotation (real bead sliding feel)
+    // MARK: - 佛珠環旋轉（真實滑動感）
 
-    /// Rotate the entire bead ring by a delta angle (called during pan gesture)
+    /// 旋轉整個佛珠環
+    /// 在拖曳手勢期間呼叫，將佛珠環沿 Z 軸旋轉指定的角度差量
+    /// - Parameter deltaAngle: 旋轉角度差量（弧度）
     func rotateRing(by deltaAngle: Float) {
         panRotation += deltaAngle
         beadRingNode.eulerAngles = SCNVector3(0, 0, panRotation)
     }
 
-    /// Snap the ring to the nearest bead position and advance the count
-    /// Returns the number of bead steps moved (can be 0)
+    /// 吸附至最近的佛珠位置
+    /// 手勢結束時呼叫，將佛珠環旋轉對齊到最近的佛珠格位，帶緩出動畫
+    /// - Returns: 移動的佛珠步數（可能為 0）
     @discardableResult
     func snapToNearestBead() -> Int {
-        // Calculate how many full bead steps we've moved
+        // 計算已移動多少個完整的佛珠步數
         let steps = Int(round(panRotation / anglePerBead))
         let snappedAngle = Float(steps) * anglePerBead
 
@@ -210,21 +242,22 @@ final class BeadSceneManager {
         return steps
     }
 
-    /// Animate advancing by one bead: rotate the ring + spin the current bead
+    /// 動畫推進一顆佛珠
+    /// 將佛珠環旋轉一個步幅，同時讓目前佛珠自轉一圈，帶緩入緩出動畫
     func animateBeadForward() {
         let targetAngle = panRotation - anglePerBead
         let index = currentBeadIndex % displayCount
         guard index < beadNodes.count else { return }
         let node = beadNodes[index]
 
-        // Rotate the whole ring by one bead step
+        // 將整個佛珠環旋轉一個步幅
         SCNTransaction.begin()
         SCNTransaction.animationDuration = 0.25
         SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
         beadRingNode.eulerAngles = SCNVector3(0, 0, targetAngle)
 
-        // Roll the individual bead on its own axis (tangent direction)
-        let rollAngle = Float.pi * 2.0 // one full spin
+        // 讓單顆佛珠沿切線方向自轉（完整一圈）
+        let rollAngle = Float.pi * 2.0
         let currentEuler = node.eulerAngles
         node.eulerAngles = SCNVector3(currentEuler.x + rollAngle, currentEuler.y, currentEuler.z)
 

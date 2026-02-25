@@ -1,3 +1,8 @@
+// MARK: - 檔案說明
+/// ContentView.swift
+/// 主畫面 - 管理 Tab 導覽和音訊設定同步
+/// 模組：Views
+
 //
 //  ContentView.swift
 //  beads
@@ -8,12 +13,17 @@
 import SwiftUI
 import SwiftData
 
+/// 應用程式主視圖，包含底部 Tab 導覽列，並負責將使用者設定同步至音訊服務
 struct ContentView: View {
+    /// 從 SwiftData 查詢所有使用者設定
     @Query private var allSettings: [UserSettings]
+    /// 音訊服務實例，管理背景音樂和音效播放
     @State private var audioService = AudioService()
 
+    /// 取得第一筆使用者設定（通常只有一筆）
     private var settings: UserSettings? { allSettings.first }
 
+    /// 主視圖內容，包含四個 Tab 頁籤：修行、記錄、經藏、設定
     var body: some View {
         TabView {
             Tab("修行", systemImage: "circle.circle") {
@@ -56,6 +66,9 @@ struct ContentView: View {
         }
     }
 
+    /// 將使用者設定同步至音訊服務
+    /// - 設定音效開關、音量、背景音樂開關及曲目
+    /// - 當背景音樂啟用時自動開始播放，停用時自動停止
     private func syncAudioWithSettings() {
         guard let s = settings else { return }
         audioService.isSFXEnabled = s.soundEnabled

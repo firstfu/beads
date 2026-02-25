@@ -1,3 +1,8 @@
+// MARK: - 檔案說明
+/// RecordsView.swift
+/// 記錄畫面 - 顯示修行統計數據、週報長條圖、月曆熱力圖及修行時長
+/// 模組：Views
+
 //
 //  RecordsView.swift
 //  beads
@@ -9,15 +14,19 @@ import SwiftUI
 import SwiftData
 import Charts
 
+/// 修行記錄視圖，展示今日統計、連續修行天數、本週長條圖、月曆熱力圖及修行時長
 struct RecordsView: View {
+    /// SwiftData 模型上下文，用於查詢修行紀錄資料
     @Environment(\.modelContext) private var modelContext
+    /// 統計資料的 ViewModel，負責載入並計算各項統計數據
     @State private var viewModel = StatsViewModel()
 
+    /// 主視圖內容，以捲動清單呈現各項修行統計卡片與圖表
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    // Today stats
+                    // 今日統計卡片
                     HStack(spacing: 12) {
                         StatsCardView(
                             title: "今日計數",
@@ -33,7 +42,7 @@ struct RecordsView: View {
                         )
                     }
 
-                    // Weekly chart
+                    // 本週修行長條圖
                     VStack(alignment: .leading, spacing: 8) {
                         Text("本週修行")
                             .font(.headline)
@@ -57,13 +66,13 @@ struct RecordsView: View {
                     .background(.ultraThinMaterial)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                    // Calendar heatmap
+                    // 月曆熱力圖
                     PracticeCalendarView(records: viewModel.monthlyRecords)
                         .padding()
                         .background(.ultraThinMaterial)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                    // Duration
+                    // 今日修行時長卡片
                     StatsCardView(
                         title: "今日時長",
                         value: formatDuration(viewModel.todayDuration),
@@ -80,6 +89,9 @@ struct RecordsView: View {
         }
     }
 
+    /// 將秒數格式化為可讀的時間字串
+    /// - Parameter seconds: 時間長度（秒）
+    /// - Returns: 格式化後的字串，例如「30 分鐘」或「1 小時 15 分」
     private func formatDuration(_ seconds: TimeInterval) -> String {
         let minutes = Int(seconds) / 60
         if minutes < 60 {
