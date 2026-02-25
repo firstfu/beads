@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "starMoonBodhi_normal.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

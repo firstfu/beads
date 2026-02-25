@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "huanghuali_normal.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
