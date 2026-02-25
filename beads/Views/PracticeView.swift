@@ -20,12 +20,18 @@ struct PracticeView: View {
     private var fastScrollMode: Bool {
         allSettings.first?.fastScrollMode ?? false
     }
+    private var currentMaterialType: BeadMaterialType {
+        if let raw = allSettings.first?.currentBeadStyle {
+            return BeadMaterialType(rawValue: raw) ?? .zitan
+        }
+        return .zitan
+    }
 
     @State private var viewModel = PracticeViewModel()
     @State private var sceneManager = BeadSceneManager()
     @State private var verticalSceneManager = VerticalBeadSceneManager()
     @State private var hapticService = HapticService()
-    @State private var audioService = AudioService()
+    @Environment(AudioService.self) private var audioService
     @State private var showResetConfirm = false
     @State private var showMeritPopup = false
     @State private var meritPopupOffset: CGFloat = 0
@@ -66,25 +72,23 @@ struct PracticeView: View {
             }
         }
         .onAppear {
+            sceneManager.materialType = currentMaterialType
+            verticalSceneManager.materialType = currentMaterialType
             viewModel.startSession(mantraName: "南無阿彌陀佛")
             viewModel.loadTodayStats(modelContext: modelContext)
-            if let settings = allSettings.first, settings.ambientSoundEnabled {
-                audioService.isAmbientEnabled = true
-                audioService.ambientVolume = settings.ambientVolume
-                audioService.startAmbient(named: settings.selectedAmbientTrack)
-            } else {
-                audioService.isAmbientEnabled = false
-            }
             #if os(iOS)
             UIApplication.shared.isIdleTimerDisabled = true
             #endif
         }
         .onDisappear {
             viewModel.endSession(modelContext: modelContext)
-            audioService.fadeOutAmbient()
             #if os(iOS)
             UIApplication.shared.isIdleTimerDisabled = false
             #endif
+        }
+        .onChange(of: allSettings.first?.currentBeadStyle) {
+            sceneManager.materialType = currentMaterialType
+            verticalSceneManager.materialType = currentMaterialType
         }
         .alert("確定要重置計數嗎？", isPresented: $showResetConfirm) {
             Button("取消", role: .cancel) { }
@@ -127,4 +131,5 @@ struct PracticeView: View {
 
 #Preview {
     PracticeView()
+        .environment(AudioService())
 }
