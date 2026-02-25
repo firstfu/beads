@@ -86,8 +86,8 @@ struct PracticeView: View {
             if showMeritPopup {
                 Text("功德+1")
                     .font(.title3.bold())
-                    .foregroundStyle(.yellow)
-                    .shadow(color: .yellow.opacity(0.5), radius: 8)
+                    .foregroundStyle(BeadsTheme.Colors.success)
+                    .shadow(color: BeadsTheme.Colors.success.opacity(0.5), radius: 8)
                     .offset(y: meritPopupOffset)
                     .opacity(meritPopupOpacity)
             }

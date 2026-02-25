@@ -70,9 +70,9 @@ final class VerticalBeadSceneManager {
     /// 包含背景色、攝影機、環境光、主光源、補光燈，並呼叫建立佛珠和串線
     private func setupScene() {
         #if os(macOS)
-            scene.background.contents = NSColor.black
+            scene.background.contents = NSColor(red: 0.93, green: 0.90, blue: 0.85, alpha: 1.0)
         #else
-            scene.background.contents = UIColor.black
+            scene.background.contents = UIColor(red: 0.93, green: 0.90, blue: 0.85, alpha: 1.0)
         #endif
 
         // 攝影機 — 定位以完整呈現垂直佛珠列
@@ -89,9 +89,9 @@ final class VerticalBeadSceneManager {
         ambientLight.light?.type = .ambient
         ambientLight.light?.intensity = 400
         #if os(macOS)
-            ambientLight.light?.color = NSColor(white: 0.9, alpha: 1.0)
+            ambientLight.light?.color = NSColor(red: 1.0, green: 0.95, blue: 0.88, alpha: 1.0)
         #else
-            ambientLight.light?.color = UIColor(white: 0.9, alpha: 1.0)
+            ambientLight.light?.color = UIColor(red: 1.0, green: 0.95, blue: 0.88, alpha: 1.0)
         #endif
         scene.rootNode.addChildNode(ambientLight)
 

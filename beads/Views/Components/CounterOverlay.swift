@@ -33,7 +33,7 @@ struct CounterOverlay: View {
             HStack {
                 Text(mantraName)
                     .font(.headline)
-                    .foregroundStyle(.white.opacity(0.8))
+                    .foregroundStyle(BeadsTheme.Colors.accent)
                 Spacer()
             }
             .padding(.horizontal, 20)
@@ -43,7 +43,7 @@ struct CounterOverlay: View {
             if rounds > 0 {
                 Text("第 \(rounds) 圈")
                     .font(.title3)
-                    .foregroundStyle(.white.opacity(0.6))
+                    .foregroundStyle(BeadsTheme.Colors.textSecondary)
                     .padding(.top, 4)
             }
 
@@ -53,11 +53,11 @@ struct CounterOverlay: View {
             VStack(spacing: 4) {
                 Text("\(count)")
                     .font(.system(size: 48, weight: .thin, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(BeadsTheme.Colors.textPrimary)
                     .contentTransition(.numericText())
                 Text("總計數")
                     .font(.caption)
-                    .foregroundStyle(.white.opacity(0.5))
+                    .foregroundStyle(BeadsTheme.Colors.textTertiary)
             }
 
             Spacer()
@@ -65,18 +65,18 @@ struct CounterOverlay: View {
             // 咒語文字顯示
             Text(mantraName)
                 .font(.title2)
-                .foregroundStyle(.white.opacity(0.9))
+                .foregroundStyle(BeadsTheme.Colors.textPrimary)
                 .padding(.bottom, 8)
 
             // 底部統計列 — 今日計數與連續天數
             HStack {
                 Label("今日：\(todayCount)", systemImage: "sun.min")
                     .font(.footnote)
-                    .foregroundStyle(.white.opacity(0.7))
+                    .foregroundStyle(BeadsTheme.Colors.textSecondary)
                 Spacer()
                 Label("\(streakDays) 天", systemImage: "flame")
                     .font(.footnote)
-                    .foregroundStyle(.orange.opacity(0.9))
+                    .foregroundStyle(BeadsTheme.Colors.accent)
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 16)

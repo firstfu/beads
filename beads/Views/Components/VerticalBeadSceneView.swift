@@ -34,7 +34,7 @@ import SwiftUI
             scnView.allowsCameraControl = false
             scnView.autoenablesDefaultLighting = false
             scnView.antialiasingMode = .multisampling4X
-            scnView.backgroundColor = .black
+            scnView.backgroundColor = NSColor(red: 0.93, green: 0.90, blue: 0.85, alpha: 1.0)
             return scnView
         }
 
@@ -98,7 +98,7 @@ import SwiftUI
             scnView.allowsCameraControl = false
             scnView.autoenablesDefaultLighting = false
             scnView.antialiasingMode = .multisampling4X
-            scnView.backgroundColor = .black
+            scnView.backgroundColor = UIColor(red: 0.93, green: 0.90, blue: 0.85, alpha: 1.0)
 
             // 拖曳手勢 — 自然的垂直佛珠滑動操作
             let pan = UIPanGestureRecognizer(
