@@ -114,6 +114,7 @@ final class VerticalBeadSceneManager {
 
         createBeads()
         createString()
+        repositionBeadsForWrapping()
     }
 
     /// 建立佛珠垂直排列
@@ -164,15 +165,8 @@ final class VerticalBeadSceneManager {
     }
 
     /// 高亮顯示目前佛珠
-    /// 將目前佛珠放大至 1.3 倍，其餘佛珠恢復原始大小，帶 0.15 秒動畫
     private func highlightCurrentBead() {
-        for (i, node) in beadNodes.enumerated() {
-            let scale: Float = (i == currentBeadIndex) ? 1.3 : 1.0
-            SCNTransaction.begin()
-            SCNTransaction.animationDuration = 0.15
-            node.scale = SCNVector3(scale, scale, scale)
-            SCNTransaction.commit()
-        }
+        // 不做放大效果
     }
 
     /// 套用材質至所有佛珠

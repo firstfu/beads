@@ -10,45 +10,129 @@
 /// MantraSeedData.swift
 /// 咒語種子資料 - 提供應用程式首次啟動時的預設咒語/佛號資料
 /// 模組：Services
+///
+/// 架構：使用 extension 分拆至 SeedData/ 目錄下的多個檔案
+/// - MantraSeedData+PureLand.swift     淨土宗佛號
+/// - MantraSeedData+Mantras.swift      咒語
+/// - MantraSeedData+ShortSutras.swift  短篇經典
+/// - MantraSeedData+AmitabhaSutra.swift 佛說阿彌陀經
+/// - MantraSeedData+UniversalGate.swift 普門品
+/// - MantraSeedData+MedicineBuddhaSutra.swift 藥師經
+/// - MantraSeedData+DiamondSutra.swift 金剛經
+/// - MantraSeedData+KsitigarbhaSutra.swift 地藏經
+/// - MantraSeedData+InfiniteLifeSutra.swift 無量壽經
+/// - MantraSeedData+Verses.swift       偈頌
 
+import Foundation
 import SwiftData
 
 /// 咒語種子資料結構
 /// 負責在應用程式首次啟動時，將預設的咒語與佛號資料寫入資料庫
-/// 包含淨土宗常見佛號與各類常用咒語
+/// 包含淨土宗佛號、咒語、經典、偈頌等四大分類
 struct MantraSeedData {
-    /// 檢查並植入預設咒語資料
-    /// 若資料庫中尚無任何咒語記錄，則自動植入預設的佛號與咒語清單
-    /// 包含 9 筆預設資料，涵蓋淨土宗佛號及常見咒語
-    /// - Parameter modelContext: SwiftData 模型上下文，用於資料庫讀寫操作
+    /// 種子資料元組型別
+    /// (名稱, 原文, 拼音, 說明, 分類, 建議次數, 排序順序)
+    typealias SeedEntry = (name: String, originalText: String, pinyinText: String, descriptionText: String, category: String, suggestedCount: Int, sortOrder: Int)
+
+    /// 當前種子資料版本
+    private static let currentVersion = 2
+
+    /// UserDefaults 儲存版本號的 key
+    private static let versionKey = "seedDataVersion"
+
+    // MARK: - 公開方法
+
+    /// 檢查並植入或升級預設咒語資料
+    /// - 全新安裝：植入所有資料
+    /// - v1 使用者（版本號為 0）：升級至 v2（補齊截斷咒語 + 新增經典偈頌）
+    /// - 已是最新版本：不做任何事
+    /// - Parameter modelContext: SwiftData 模型上下文
     static func seedIfNeeded(modelContext: ModelContext) {
+        let savedVersion = UserDefaults.standard.integer(forKey: versionKey)
+
+        if savedVersion == 0 {
+            let descriptor = FetchDescriptor<Mantra>()
+            let count = (try? modelContext.fetchCount(descriptor)) ?? 0
+
+            if count == 0 {
+                seedAllData(modelContext: modelContext)
+            } else {
+                upgradeToV2(modelContext: modelContext)
+            }
+        } else if savedVersion < currentVersion {
+            if savedVersion < 2 {
+                upgradeToV2(modelContext: modelContext)
+            }
+        }
+    }
+
+    // MARK: - 全新安裝
+
+    /// 植入所有種子資料（全新安裝用）
+    private static func seedAllData(modelContext: ModelContext) {
+        let allEntries: [SeedEntry] =
+            pureLandEntries
+            + mantraEntries
+            + shortSutraEntries
+            + amitabhaSutraEntries
+            + universalGateEntries
+            + medicineBuddhaSutraEntries
+            + diamondSutraEntries
+            + ksitigarbhaSutraEntries
+            + infiniteLifeSutraEntries
+            + verseEntries
+
+        insertEntries(allEntries, into: modelContext)
+        UserDefaults.standard.set(currentVersion, forKey: versionKey)
+    }
+
+    // MARK: - v1 → v2 升級
+
+    /// 從 v1 升級至 v2
+    /// 1. 更新 4 筆被截斷的咒語（大悲咒、往生咒、藥師灌頂真言、準提神咒）
+    /// 2. 新增經典與偈頌類別的所有資料
+    private static func upgradeToV2(modelContext: ModelContext) {
+        // 取得所有現有咒語，用於比對更新
         let descriptor = FetchDescriptor<Mantra>()
-        let count = (try? modelContext.fetchCount(descriptor)) ?? 0
-        guard count == 0 else { return }
+        let existingMantras = (try? modelContext.fetch(descriptor)) ?? []
+        let existingNames = Set(existingMantras.map(\.name))
 
-        /// 預設咒語資料陣列
-        /// 每筆資料依序為：(名稱, 原文, 拼音, 說明, 分類, 建議次數, 排序順序)
-        let mantras: [(String, String, String, String, String, Int, Int)] = [
-            ("南無阿彌陀佛", "南無阿彌陀佛", "Nā mó ā mí tuó fó", "淨土宗核心佛號。稱念阿彌陀佛名號，祈願往生西方極樂世界。", "淨土宗", 108, 0),
-            ("南無觀世音菩薩", "南無觀世音菩薩", "Nā mó guān shì yīn pú sà", "觀世音菩薩大慈大悲，救苦救難，聞聲救苦。", "淨土宗", 108, 1),
-            ("南無地藏王菩薩", "南無地藏王菩薩", "Nā mó dì zàng wáng pú sà", "地藏菩薩發願「地獄不空，誓不成佛」。", "淨土宗", 108, 2),
-            ("南無藥師琉璃光如來", "南無藥師琉璃光如來", "Nā mó yào shī liú lí guāng rú lái", "藥師佛為東方淨琉璃世界教主，消災延壽。", "淨土宗", 108, 3),
-            ("六字大明咒", "嗡嘛呢唄美吽", "Ǎn ma ní bēi měi hōng", "觀世音菩薩心咒，蘊含諸佛無盡的慈悲與加持。", "咒語", 108, 4),
-            ("大悲咒", "南無喝囉怛那哆囉夜耶⋯⋯", "Nā mó hé là dá nā duō là yè yē...", "千手千眼觀世音菩薩廣大圓滿無礙大悲心陀羅尼。全咒共84句。", "咒語", 84, 5),
-            ("往生咒", "南無阿彌多婆夜⋯⋯", "Nā mó ā mí duō pó yè...", "拔一切業障根本得生淨土陀羅尼。", "咒語", 21, 6),
-            ("藥師灌頂真言", "南謨薄伽伐帝⋯⋯", "Nā mó bó qié fá dì...", "藥師琉璃光如來本願功德經中的核心咒語。", "咒語", 108, 7),
-            ("準提神咒", "稽首皈依蘇悉帝⋯⋯", "Jī shǒu guī yī sū xī dì...", "準提菩薩咒，能滅十惡五逆一切罪障。", "咒語", 108, 8),
-        ]
+        // 更新截斷的咒語
+        let truncatedNames: Set<String> = ["大悲咒", "往生咒", "藥師灌頂真言", "準提神咒"]
+        for entry in mantraEntries where truncatedNames.contains(entry.name) {
+            if let existing = existingMantras.first(where: { $0.name == entry.name }) {
+                existing.originalText = entry.originalText
+                existing.pinyinText = entry.pinyinText
+                existing.descriptionText = entry.descriptionText
+            }
+        }
 
-        for (name, text, pinyin, desc, category, count, order) in mantras {
+        // 新增所有不存在的資料
+        let newEntries: [SeedEntry] =
+            (pureLandEntries + mantraEntries + shortSutraEntries
+            + amitabhaSutraEntries + universalGateEntries
+            + medicineBuddhaSutraEntries + diamondSutraEntries
+            + ksitigarbhaSutraEntries + infiniteLifeSutraEntries
+            + verseEntries)
+            .filter { !existingNames.contains($0.name) }
+
+        insertEntries(newEntries, into: modelContext)
+        UserDefaults.standard.set(currentVersion, forKey: versionKey)
+    }
+
+    // MARK: - 輔助方法
+
+    /// 將 SeedEntry 陣列批次插入資料庫
+    private static func insertEntries(_ entries: [SeedEntry], into modelContext: ModelContext) {
+        for entry in entries {
             let mantra = Mantra(
-                name: name,
-                originalText: text,
-                pinyinText: pinyin,
-                descriptionText: desc,
-                category: category,
-                suggestedCount: count,
-                sortOrder: order
+                name: entry.name,
+                originalText: entry.originalText,
+                pinyinText: entry.pinyinText,
+                descriptionText: entry.descriptionText,
+                category: entry.category,
+                suggestedCount: entry.suggestedCount,
+                sortOrder: entry.sortOrder
             )
             modelContext.insert(mantra)
         }
