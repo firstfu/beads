@@ -17,8 +17,8 @@ final class BeadSceneManager {
     let scene: SCNScene
     private var beadNodes: [SCNNode] = []
     private let beadCount: Int
-    private let radius: Float = 3.0
-    private let beadRadius: Float = 0.25
+    private let radius: Float = 2.2
+    private let beadRadius: Float = 0.2
 
     var currentBeadIndex: Int = 0 {
         didSet { highlightCurrentBead() }
@@ -44,8 +44,8 @@ final class BeadSceneManager {
         // Camera
         let cameraNode = SCNNode()
         cameraNode.camera = SCNCamera()
-        cameraNode.camera?.fieldOfView = 45
-        cameraNode.position = SCNVector3(0, 0, 8)
+        cameraNode.camera?.fieldOfView = 50
+        cameraNode.position = SCNVector3(0, 0, 7)
         cameraNode.name = "camera"
         scene.rootNode.addChildNode(cameraNode)
 
