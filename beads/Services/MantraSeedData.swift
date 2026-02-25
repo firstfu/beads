@@ -64,13 +64,14 @@ struct MantraSeedData {
         guard savedVersion < currentSeedVersion else { return }
 
         if savedVersion < 1 {
-            // 全新安裝：植入所有種子資料
+            // 全新安裝：植入所有最新版本的種子資料，不需執行升級步驟
             seedAllData(modelContext: modelContext)
-        }
-
-        if savedVersion < 2 {
-            // 從 v1 升級至 v2：修正截斷咒語，補充新分類
-            upgradeToV2(modelContext: modelContext)
+        } else {
+            // 既有使用者升級路徑：依序執行各版本的升級邏輯
+            if savedVersion < 2 {
+                // 從 v1 升級至 v2：修正截斷咒語，補充新分類
+                upgradeToV2(modelContext: modelContext)
+            }
         }
 
         // 更新版本號並儲存
