@@ -29,38 +29,48 @@ struct CounterOverlay: View {
     /// 視圖主體
     var body: some View {
         VStack {
-            // 頂部列 — 咒語名稱與圈數
+            // 頂部列 — 咒語名稱
             HStack {
                 Text(mantraName)
                     .font(.headline)
                     .foregroundStyle(.white.opacity(0.8))
                 Spacer()
-                if rounds > 0 {
-                    Text("第 \(rounds) 圈")
-                        .font(.subheadline)
-                        .foregroundStyle(.white.opacity(0.9))
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 4)
-                        .background(.black.opacity(0.5))
-                        .clipShape(Capsule())
-                }
             }
             .padding(.horizontal, 20)
             .padding(.top, 8)
 
             Spacer()
 
-            // 底部區域 — 計數與統計
+            // 底部區域 — 計數、圈數與統計
             VStack(spacing: 12) {
-                // 計數顯示
-                VStack(spacing: 4) {
-                    Text("\(count)")
-                        .font(.system(size: 48, weight: .thin, design: .rounded))
-                        .foregroundStyle(.white)
-                        .contentTransition(.numericText())
-                    Text("總計數")
-                        .font(.caption)
-                        .foregroundStyle(.white.opacity(0.7))
+                // 計數與圈數
+                HStack(spacing: 16) {
+                    // 總計數
+                    VStack(spacing: 4) {
+                        Text("\(count)")
+                            .font(.system(size: 48, weight: .thin, design: .rounded))
+                            .foregroundStyle(.white)
+                            .contentTransition(.numericText())
+                        Text("總計數")
+                            .font(.caption)
+                            .foregroundStyle(.white.opacity(0.7))
+                    }
+
+                    // 分隔線
+                    Rectangle()
+                        .fill(.white.opacity(0.3))
+                        .frame(width: 1, height: 40)
+
+                    // 圈數
+                    VStack(spacing: 4) {
+                        Text("\(rounds)")
+                            .font(.system(size: 32, weight: .thin, design: .rounded))
+                            .foregroundStyle(.white)
+                            .contentTransition(.numericText())
+                        Text("圈")
+                            .font(.caption)
+                            .foregroundStyle(.white.opacity(0.7))
+                    }
                 }
                 .padding(.horizontal, 24)
                 .padding(.vertical, 12)
