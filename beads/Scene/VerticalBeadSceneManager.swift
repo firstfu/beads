@@ -70,9 +70,9 @@ final class VerticalBeadSceneManager {
     /// 包含背景色、攝影機、環境光、主光源、補光燈，並呼叫建立佛珠和串線
     private func setupScene() {
         #if os(macOS)
-            scene.background.contents = NSColor.black
+            scene.background.contents = NSColor.clear
         #else
-            scene.background.contents = UIColor.black
+            scene.background.contents = UIColor.clear
         #endif
 
         // 攝影機 — 定位以完整呈現垂直佛珠列
@@ -145,7 +145,8 @@ final class VerticalBeadSceneManager {
     /// 繪製串線
     /// 使用細圓柱體覆蓋整個可見區域，固定在場景根節點不隨佛珠列移動
     private func createString() {
-        let visibleHeight = orthoScale * 2 + beadRadius * 4
+        // 透視相機 FOV=45° 距離 z=6 的可見高度 ≈ 2*tan(22.5°)*6 ≈ 5.0，加上足夠邊距
+        let visibleHeight: Float = 8.0
         let cylinder = SCNCylinder(radius: 0.015, height: CGFloat(visibleHeight))
 
         let stringMaterial = SCNMaterial()

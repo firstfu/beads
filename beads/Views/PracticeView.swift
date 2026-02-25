@@ -37,6 +37,13 @@ struct PracticeView: View {
         }
         return .zitan
     }
+    /// 目前的背景主題，從使用者設定中取得
+    private var currentBackgroundTheme: ZenBackgroundTheme {
+        if let raw = allSettings.first?.backgroundTheme {
+            return ZenBackgroundTheme(rawValue: raw) ?? .inkWash
+        }
+        return .inkWash
+    }
 
     /// 修行邏輯的 ViewModel，管理計數、回合數等狀態
     @State private var viewModel = PracticeViewModel()
@@ -60,6 +67,9 @@ struct PracticeView: View {
     /// 主視圖內容，根據顯示模式切換環形或直列佛珠場景，並疊加計數器與功德動畫
     var body: some View {
         ZStack {
+            // 禪意背景層
+            ZenBackgroundView(theme: currentBackgroundTheme)
+
             // 3D 佛珠場景 - 根據顯示模式切換
             if displayMode == .vertical {
                 VerticalBeadSceneView(sceneManager: verticalSceneManager, onBeadAdvance: {

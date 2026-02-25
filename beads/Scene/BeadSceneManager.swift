@@ -79,9 +79,9 @@ final class BeadSceneManager {
     /// 包含背景色、攝影機、環境光、主光源、補光燈，並呼叫建立佛珠和串線
     private func setupScene() {
         #if os(macOS)
-            scene.background.contents = NSColor.black
+            scene.background.contents = NSColor.clear
         #else
-            scene.background.contents = UIColor.black
+            scene.background.contents = UIColor.clear
         #endif
 
         // 攝影機 — 定位以完整呈現佛珠圓環

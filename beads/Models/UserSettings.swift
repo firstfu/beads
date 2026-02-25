@@ -25,6 +25,9 @@ enum BeadDisplayMode: String, CaseIterable, Identifiable, Codable {
     /// 直立式排列（佛珠排成直線）
     case vertical = "直立式"
 
+    /// AR 實境模式（透過擴增實境顯示佛珠）
+    case ar = "AR 實境"
+
     /// 用於 Identifiable 協定的唯一識別值
     var id: String { rawValue }
 }
@@ -138,6 +141,9 @@ final class UserSettings {
     /// 是否啟用快速滾動模式（加速撥珠操作）
     var fastScrollMode: Bool = false
 
+    /// 背景主題（對應 ZenBackgroundTheme 的 rawValue，預設為「水墨」）
+    var backgroundTheme: String = "水墨"
+
     /// 初始化使用者設定，設定所有偏好項目的預設值
     init() {
         self.currentBeadStyle = "小葉紫檀"
@@ -151,5 +157,6 @@ final class UserSettings {
         self.selectedAmbientTrack = AmbientTrack.meditation1.rawValue
         self.displayMode = BeadDisplayMode.circular.rawValue
         self.fastScrollMode = false
+        self.backgroundTheme = ZenBackgroundTheme.inkWash.rawValue
     }
 }

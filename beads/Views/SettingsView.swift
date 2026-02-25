@@ -42,6 +42,8 @@ struct SettingsView: View {
     @State private var displayMode: String = BeadDisplayMode.circular.rawValue
     /// 是否啟用快速撥珠模式
     @State private var fastScrollMode: Bool = false
+    /// 背景主題的原始值
+    @State private var backgroundTheme: String = ZenBackgroundTheme.inkWash.rawValue
 
     /// 主視圖內容，以表單形式呈現各項設定區段
     var body: some View {
@@ -63,6 +65,16 @@ struct SettingsView: View {
                     Text("開啟後滑動可連續撥多顆珠，關閉時每次滑動只撥一顆")
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                }
+
+                // MARK: - 背景主題設定
+                Section("背景主題") {
+                    Picker("主題", selection: $backgroundTheme) {
+                        ForEach(ZenBackgroundTheme.allCases) { theme in
+                            Text(theme.rawValue).tag(theme.rawValue)
+                        }
+                    }
+                    .pickerStyle(.segmented)
                 }
 
                 // MARK: - 佛珠樣式設定
@@ -141,6 +153,7 @@ struct SettingsView: View {
             .onChange(of: keepScreenOn) { saveSettings() }
             .onChange(of: displayMode) { saveSettings() }
             .onChange(of: fastScrollMode) { saveSettings() }
+            .onChange(of: backgroundTheme) { saveSettings() }
         }
     }
 
@@ -169,6 +182,7 @@ struct SettingsView: View {
         keepScreenOn = s.keepScreenOn
         displayMode = s.displayMode
         fastScrollMode = s.fastScrollMode
+        backgroundTheme = s.backgroundTheme
     }
 
     /// 將目前本地 @State 屬性的值寫回 SwiftData 使用者設定物件並儲存
@@ -185,6 +199,7 @@ struct SettingsView: View {
         s.keepScreenOn = keepScreenOn
         s.displayMode = displayMode
         s.fastScrollMode = fastScrollMode
+        s.backgroundTheme = backgroundTheme
         try? modelContext.save()
     }
 }
