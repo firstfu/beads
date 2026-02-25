@@ -143,10 +143,10 @@ final class VerticalBeadSceneManager {
     }
 
     /// 繪製串線
-    /// 使用細圓柱體作為穿過所有佛珠的垂直串線，串線隨佛珠列一起移動
+    /// 使用細圓柱體覆蓋整個可見區域，固定在場景根節點不隨佛珠列移動
     private func createString() {
-        let totalLength = Float(beadCount - 1) * beadSpacing + beadRadius * 2.0
-        let cylinder = SCNCylinder(radius: 0.015, height: CGFloat(totalLength))
+        let visibleHeight = orthoScale * 2 + beadRadius * 4
+        let cylinder = SCNCylinder(radius: 0.015, height: CGFloat(visibleHeight))
 
         let stringMaterial = SCNMaterial()
         #if os(macOS)
@@ -157,12 +157,9 @@ final class VerticalBeadSceneManager {
         cylinder.materials = [stringMaterial]
 
         let stringNode = SCNNode(geometry: cylinder)
-        // 將圓柱體置中，使其從第一顆佛珠延伸到最後一顆
-        let centerY = -Float(beadCount - 1) * beadSpacing / 2.0
-        stringNode.position = SCNVector3(0, centerY, 0)
+        stringNode.position = SCNVector3(0, 0, 0)
         stringNode.name = "string"
-        // 串線與佛珠列一起移動，保持對齊
-        beadColumnNode.addChildNode(stringNode)
+        scene.rootNode.addChildNode(stringNode)
     }
 
     /// 高亮顯示目前佛珠
@@ -190,11 +187,12 @@ final class VerticalBeadSceneManager {
     // MARK: - 佛珠列平移（真實滑動感）
 
     /// 平移整個佛珠列
-    /// 在拖曳手勢期間呼叫，將佛珠列沿 Y 軸平移指定的差量
+    /// 在拖曳手勢期間呼叫，將佛珠列沿 Y 軸平移指定的差量，並重新定位佛珠以實現無限循環
     /// - Parameter deltaY: Y 軸平移差量
     func translateColumn(by deltaY: Float) {
         panTranslation += deltaY
         beadColumnNode.position = SCNVector3(0, panTranslation, 0)
+        repositionBeadsForWrapping()
     }
 
     /// 吸附至最近的佛珠位置
@@ -213,6 +211,7 @@ final class VerticalBeadSceneManager {
         SCNTransaction.commit()
 
         panTranslation = snappedY
+        repositionBeadsForWrapping()
         return steps
     }
 
@@ -238,5 +237,23 @@ final class VerticalBeadSceneManager {
         SCNTransaction.commit()
 
         panTranslation = targetY
+        repositionBeadsForWrapping()
+    }
+
+    // MARK: - 無限循環滾動
+
+    /// 重新定位佛珠以實現無限循環滾動
+    /// 將滾出可見區域的佛珠環繞到另一端，使 108 顆佛珠形成無縫循環
+    /// 利用模數算術讓每顆佛珠始終出現在最接近相機中心的位置
+    private func repositionBeadsForWrapping() {
+        let totalLength = Float(beadCount) * beadSpacing
+        let cameraLocalY = -panTranslation
+
+        for (i, node) in beadNodes.enumerated() {
+            let baseY = -Float(i) * beadSpacing
+            let offset = round((cameraLocalY - baseY) / totalLength)
+            let wrappedY = baseY + offset * totalLength
+            node.position = SCNVector3(0, wrappedY, 0)
+        }
     }
 }
