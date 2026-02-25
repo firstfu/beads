@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSCameraUsageDescription</key>
+	<string>需要使用相機來啟用 AR 擴增實境功能，將虛擬佛珠放置在真實環境中。</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
