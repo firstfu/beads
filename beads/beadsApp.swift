@@ -12,20 +12,40 @@ import SwiftData
 struct beadsApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            PracticeSession.self,
+            DailyRecord.self,
+            Mantra.self,
+            UserSettings.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+            // Schema migration failed — delete old store and recreate
+            let url = modelConfiguration.url
+            let fileManager = FileManager.default
+            let storeDir = url.deletingLastPathComponent()
+            let storeName = url.deletingPathExtension().lastPathComponent
+            for suffix in ["", "-wal", "-shm"] {
+                let fileURL = storeDir.appendingPathComponent(storeName + ".store" + suffix)
+                try? fileManager.removeItem(at: fileURL)
+            }
+            do {
+                return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            } catch {
+                fatalError("Could not create ModelContainer: \(error)")
+            }
         }
     }()
 
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .onAppear {
+                    let context = sharedModelContainer.mainContext
+                    MantraSeedData.seedIfNeeded(modelContext: context)
+                }
         }
         .modelContainer(sharedModelContainer)
     }
