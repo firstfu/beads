@@ -48,11 +48,11 @@ enum BeadMaterialType: String, CaseIterable, Identifiable {
     /// 根據不同材質回傳對應的基礎顏色
     var diffuseColor: PlatformColor {
         switch self {
-        case .zitan: return PlatformColor(red: 0.35, green: 0.12, blue: 0.08, alpha: 1.0)
-        case .bodhi: return PlatformColor(red: 0.85, green: 0.80, blue: 0.70, alpha: 1.0)
-        case .starMoonBodhi: return PlatformColor(red: 0.90, green: 0.85, blue: 0.70, alpha: 1.0)
-        case .huanghuali: return PlatformColor(red: 0.75, green: 0.58, blue: 0.28, alpha: 1.0)
-        case .amber: return PlatformColor(red: 0.90, green: 0.65, blue: 0.20, alpha: 0.85)
+        case .zitan: return PlatformColor(red: 0.28, green: 0.08, blue: 0.05, alpha: 1.0)
+        case .bodhi: return PlatformColor(red: 0.55, green: 0.42, blue: 0.28, alpha: 1.0)
+        case .starMoonBodhi: return PlatformColor(red: 0.88, green: 0.83, blue: 0.68, alpha: 1.0)
+        case .huanghuali: return PlatformColor(red: 0.72, green: 0.52, blue: 0.25, alpha: 1.0)
+        case .amber: return PlatformColor(red: 0.85, green: 0.60, blue: 0.18, alpha: 0.85)
         }
     }
 
@@ -60,11 +60,11 @@ enum BeadMaterialType: String, CaseIterable, Identifiable {
     /// 值越大表面越粗糙，值越小越光滑（範圍 0.0 ~ 1.0）
     var roughness: CGFloat {
         switch self {
-        case .zitan: return 0.3
-        case .bodhi: return 0.6
-        case .starMoonBodhi: return 0.5
-        case .huanghuali: return 0.25
-        case .amber: return 0.15
+        case .zitan: return 0.25          // 紫檀盤玩後油潤光滑
+        case .bodhi: return 0.65          // 菩提子天然粗糙表面
+        case .starMoonBodhi: return 0.4   // 星月菩提打磨後較光滑
+        case .huanghuali: return 0.2      // 黃花梨拋光後光澤好
+        case .amber: return 0.1           // 琥珀蜜蠟非常光滑通透
         }
     }
 
@@ -72,7 +72,8 @@ enum BeadMaterialType: String, CaseIterable, Identifiable {
     /// 僅琥珀蜜蠟具有微弱金屬質感，其餘材質為非金屬（範圍 0.0 ~ 1.0）
     var metalness: CGFloat {
         switch self {
-        case .amber: return 0.05
+        case .zitan: return 0.02          // 紫檀有微弱的油脂光澤
+        case .amber: return 0.03          // 琥珀有微弱的樹脂光澤
         default: return 0.0
         }
     }
