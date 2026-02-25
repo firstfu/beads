@@ -98,7 +98,7 @@ struct MantraDetailView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding()
-        .background(Color(.systemGray6))
+        .background(BeadsTheme.Colors.surfacePrimary)
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
@@ -121,7 +121,7 @@ struct MantraDetailView: View {
                     .foregroundStyle(.secondary)
             }
             .padding()
-            .background(Color(.systemGray6))
+            .background(BeadsTheme.Colors.surfacePrimary)
             .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
@@ -143,7 +143,7 @@ struct MantraDetailView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding()
-            .background(Color(.systemGray6))
+            .background(BeadsTheme.Colors.surfacePrimary)
             .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
@@ -159,7 +159,7 @@ struct MantraDetailView: View {
                 Text("建議每次持誦 \(mantra.suggestedCount) 遍")
                     .font(.subheadline.weight(.medium))
             }
-            .foregroundStyle(.orange)
+            .foregroundStyle(BeadsTheme.Colors.accent)
 
             HStack(spacing: 8) {
                 Label(mantra.category, systemImage: "tag")
@@ -167,13 +167,13 @@ struct MantraDetailView: View {
                     .foregroundStyle(.white)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 4)
-                    .background(Color.orange.opacity(0.8))
+                    .background(BeadsTheme.Colors.accent.opacity(0.8))
                     .clipShape(Capsule())
             }
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.orange.opacity(0.1))
+        .background(BeadsTheme.Colors.accentSubtle)
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
@@ -217,7 +217,7 @@ struct MantraDetailView: View {
                 .foregroundStyle(.white)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
-                .background(Color.black.opacity(0.75))
+                .background(BeadsTheme.Colors.accent)
                 .clipShape(Capsule())
                 .transition(.move(edge: .top).combined(with: .opacity))
                 .padding(.top, 8)
