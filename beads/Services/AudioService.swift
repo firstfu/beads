@@ -36,7 +36,11 @@ final class AudioService {
 
     func startAmbient(named name: String) {
         guard isAmbientEnabled else { return }
-        guard let url = Bundle.main.url(forResource: name, withExtension: "mp3") else { return }
+        guard let url = Bundle.main.url(forResource: name, withExtension: "mp3", subdirectory: "ambient")
+                ?? Bundle.main.url(forResource: name, withExtension: "mp3") else {
+            print("Ambient file not found: \(name).mp3")
+            return
+        }
         do {
             ambientPlayer = try AVAudioPlayer(contentsOf: url)
             ambientPlayer?.numberOfLoops = -1
