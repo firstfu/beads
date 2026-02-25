@@ -46,8 +46,7 @@ struct StatsCardView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
-        .background(BeadsTheme.Colors.surfacePrimary)
+        .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 12))
-        .shadow(color: BeadsTheme.Colors.textPrimary.opacity(0.08), radius: 8, y: 2)
     }
 }

@@ -29,19 +29,11 @@ struct CounterOverlay: View {
     /// 視圖主體
     var body: some View {
         VStack {
-            // 蓮花裝飾
-            HStack {
-                Spacer()
-                LotusView(color: BeadsTheme.Colors.accent.opacity(0.5), size: 28)
-                Spacer()
-            }
-            .padding(.top, 4)
-
             // 頂部列 — 顯示咒語名稱
             HStack {
                 Text(mantraName)
                     .font(.headline)
-                    .foregroundStyle(BeadsTheme.Colors.accent)
+                    .foregroundStyle(.white.opacity(0.8))
                 Spacer()
             }
             .padding(.horizontal, 20)
@@ -51,7 +43,7 @@ struct CounterOverlay: View {
             if rounds > 0 {
                 Text("第 \(rounds) 圈")
                     .font(.title3)
-                    .foregroundStyle(BeadsTheme.Colors.textSecondary)
+                    .foregroundStyle(.white.opacity(0.6))
                     .padding(.top, 4)
             }
 
@@ -61,11 +53,11 @@ struct CounterOverlay: View {
             VStack(spacing: 4) {
                 Text("\(count)")
                     .font(.system(size: 48, weight: .thin, design: .rounded))
-                    .foregroundStyle(BeadsTheme.Colors.textPrimary)
+                    .foregroundStyle(.white)
                     .contentTransition(.numericText())
                 Text("總計數")
                     .font(.caption)
-                    .foregroundStyle(BeadsTheme.Colors.textTertiary)
+                    .foregroundStyle(.white.opacity(0.5))
             }
 
             Spacer()
@@ -73,18 +65,18 @@ struct CounterOverlay: View {
             // 咒語文字顯示
             Text(mantraName)
                 .font(.title2)
-                .foregroundStyle(BeadsTheme.Colors.textPrimary)
+                .foregroundStyle(.white.opacity(0.9))
                 .padding(.bottom, 8)
 
             // 底部統計列 — 今日計數與連續天數
             HStack {
                 Label("今日：\(todayCount)", systemImage: "sun.min")
                     .font(.footnote)
-                    .foregroundStyle(BeadsTheme.Colors.textSecondary)
+                    .foregroundStyle(.white.opacity(0.7))
                 Spacer()
                 Label("\(streakDays) 天", systemImage: "flame")
                     .font(.footnote)
-                    .foregroundStyle(BeadsTheme.Colors.accent)
+                    .foregroundStyle(.orange.opacity(0.9))
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 16)

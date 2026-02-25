@@ -30,11 +30,11 @@ private func iconForCategory(_ category: String) -> String {
 /// 取得分類對應的強調色
 private func colorForCategory(_ category: String) -> Color {
     switch category {
-    case "淨土宗": return BeadsTheme.Colors.categoryPureLand
-    case "咒語": return BeadsTheme.Colors.categoryMantra
-    case "經典": return BeadsTheme.Colors.categoryClassic
-    case "偈頌": return BeadsTheme.Colors.categoryVerse
-    default: return BeadsTheme.Colors.textTertiary
+    case "淨土宗": return .orange
+    case "咒語": return .purple
+    case "經典": return .blue
+    case "偈頌": return .green
+    default: return .gray
     }
 }
 
