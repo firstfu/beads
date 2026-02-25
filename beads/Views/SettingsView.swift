@@ -20,10 +20,20 @@ struct SettingsView: View {
     @State private var ambientVolume: Float = 0.5
     @State private var sfxVolume: Float = 0.8
     @State private var keepScreenOn: Bool = true
+    @State private var displayMode: String = BeadDisplayMode.circular.rawValue
 
     var body: some View {
         NavigationStack {
             Form {
+                Section("顯示模式") {
+                    Picker("佛珠排列", selection: $displayMode) {
+                        ForEach(BeadDisplayMode.allCases) { mode in
+                            Text(mode.rawValue).tag(mode.rawValue)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+
                 Section("佛珠樣式") {
                     Picker("材質", selection: $currentBeadStyle) {
                         ForEach(BeadMaterialType.allCases) { material in
@@ -83,6 +93,7 @@ struct SettingsView: View {
             .onChange(of: ambientVolume) { saveSettings() }
             .onChange(of: sfxVolume) { saveSettings() }
             .onChange(of: keepScreenOn) { saveSettings() }
+            .onChange(of: displayMode) { saveSettings() }
         }
     }
 
@@ -105,6 +116,7 @@ struct SettingsView: View {
         ambientVolume = s.ambientVolume
         sfxVolume = s.sfxVolume
         keepScreenOn = s.keepScreenOn
+        displayMode = s.displayMode
     }
 
     private func saveSettings() {
@@ -117,6 +129,7 @@ struct SettingsView: View {
         s.ambientVolume = ambientVolume
         s.sfxVolume = sfxVolume
         s.keepScreenOn = keepScreenOn
+        s.displayMode = displayMode
         try? modelContext.save()
     }
 }

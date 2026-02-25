@@ -8,6 +8,13 @@
 import Foundation
 import SwiftData
 
+enum BeadDisplayMode: String, CaseIterable, Identifiable, Codable {
+    case circular = "圓環式"
+    case vertical = "直立式"
+
+    var id: String { rawValue }
+}
+
 @Model
 final class UserSettings {
     var currentBeadStyle: String
@@ -18,6 +25,7 @@ final class UserSettings {
     var ambientVolume: Float
     var sfxVolume: Float
     var keepScreenOn: Bool
+    var displayMode: String = "圓環式"
 
     init() {
         self.currentBeadStyle = "小葉紫檀"
@@ -28,5 +36,6 @@ final class UserSettings {
         self.ambientVolume = 0.5
         self.sfxVolume = 0.8
         self.keepScreenOn = true
+        self.displayMode = BeadDisplayMode.circular.rawValue
     }
 }
