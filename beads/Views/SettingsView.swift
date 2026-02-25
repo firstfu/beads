@@ -18,6 +18,7 @@ struct SettingsView: View {
     @State private var hapticEnabled: Bool = true
     @State private var ambientSoundEnabled: Bool = true
     @State private var ambientVolume: Float = 0.5
+    @State private var selectedAmbientTrack: String = AmbientTrack.meditation1.rawValue
     @State private var sfxVolume: Float = 0.8
     @State private var keepScreenOn: Bool = true
     @State private var displayMode: String = BeadDisplayMode.circular.rawValue
@@ -62,6 +63,15 @@ struct SettingsView: View {
                                 .font(.caption)
                             Slider(value: $ambientVolume, in: 0...1)
                         }
+                        Picker("背景音樂曲目", selection: $selectedAmbientTrack) {
+                            ForEach(AmbientTrack.groupedByCategory, id: \.category) { group in
+                                Section(group.category) {
+                                    ForEach(group.tracks) { track in
+                                        Text(track.displayName).tag(track.rawValue)
+                                    }
+                                }
+                            }
+                        }
                     }
                     VStack(alignment: .leading) {
                         Text("音效音量")
@@ -91,6 +101,7 @@ struct SettingsView: View {
             .onChange(of: hapticEnabled) { saveSettings() }
             .onChange(of: ambientSoundEnabled) { saveSettings() }
             .onChange(of: ambientVolume) { saveSettings() }
+            .onChange(of: selectedAmbientTrack) { saveSettings() }
             .onChange(of: sfxVolume) { saveSettings() }
             .onChange(of: keepScreenOn) { saveSettings() }
             .onChange(of: displayMode) { saveSettings() }
@@ -114,6 +125,7 @@ struct SettingsView: View {
         hapticEnabled = s.hapticEnabled
         ambientSoundEnabled = s.ambientSoundEnabled
         ambientVolume = s.ambientVolume
+        selectedAmbientTrack = s.selectedAmbientTrack
         sfxVolume = s.sfxVolume
         keepScreenOn = s.keepScreenOn
         displayMode = s.displayMode
@@ -127,6 +139,7 @@ struct SettingsView: View {
         s.hapticEnabled = hapticEnabled
         s.ambientSoundEnabled = ambientSoundEnabled
         s.ambientVolume = ambientVolume
+        s.selectedAmbientTrack = selectedAmbientTrack
         s.sfxVolume = sfxVolume
         s.keepScreenOn = keepScreenOn
         s.displayMode = displayMode
