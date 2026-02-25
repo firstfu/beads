@@ -52,7 +52,7 @@ struct RecordsView: View {
                                 x: .value("日期", item.date, unit: .day),
                                 y: .value("計數", item.count)
                             )
-                            .foregroundStyle(Color.orange.gradient)
+                            .foregroundStyle(BeadsTheme.Colors.accent.gradient)
                             .cornerRadius(4)
                         }
                         .frame(height: 180)
@@ -63,13 +63,13 @@ struct RecordsView: View {
                         }
                     }
                     .padding()
-                    .background(.ultraThinMaterial)
+                    .background(BeadsTheme.Colors.surfacePrimary)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
 
                     // 月曆熱力圖
                     PracticeCalendarView(records: viewModel.monthlyRecords)
                         .padding()
-                        .background(.ultraThinMaterial)
+                        .background(BeadsTheme.Colors.surfacePrimary)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
 
                     // 今日修行時長卡片
