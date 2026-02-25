@@ -24,6 +24,15 @@ final class BeadSceneManager {
     private let beadGap: Float = 0.06  // gap between beads
     private var displayCount: Int = 0
 
+    /// Container node that holds all beads — rotated to simulate sliding
+    private let beadRingNode = SCNNode()
+
+    /// Angle per bead step (radians)
+    private(set) var anglePerBead: Float = 0
+
+    /// Accumulated rotation from pan gesture (radians)
+    var panRotation: Float = 0
+
     var currentBeadIndex: Int = 0 {
         didSet { highlightCurrentBead() }
     }
@@ -41,6 +50,7 @@ final class BeadSceneManager {
         let beadDiameter = beadRadius * 2.0
         let spacePerBead = beadDiameter + beadGap
         self.displayCount = min(Int(circumference / spacePerBead), beadCount)
+        self.anglePerBead = (Float.pi * 2.0) / Float(displayCount)
 
         setupScene()
     }
@@ -94,6 +104,10 @@ final class BeadSceneManager {
     }
 
     private func createBeads() {
+        // Add the ring container to the scene
+        beadRingNode.name = "bead_ring"
+        scene.rootNode.addChildNode(beadRingNode)
+
         let beadGeometry = SCNSphere(radius: CGFloat(beadRadius))
         beadGeometry.segmentCount = 48
 
@@ -101,8 +115,7 @@ final class BeadSceneManager {
         materialType.applyTo(material)
         beadGeometry.materials = [material]
 
-        // Place beads evenly around the circle
-        // Start from bottom (6 o'clock position) and go clockwise
+        // Place beads evenly around the circle inside the ring container
         for i in 0..<displayCount {
             let angle = Float(i) / Float(displayCount) * Float.pi * 2 + Float.pi / 2
             let x = circleRadius * cos(angle)
@@ -111,11 +124,11 @@ final class BeadSceneManager {
             let node = SCNNode(geometry: beadGeometry.copy() as? SCNGeometry)
             node.position = SCNVector3(x, y, 0)
             node.name = "bead_\(i)"
-            scene.rootNode.addChildNode(node)
+            beadRingNode.addChildNode(node)
             beadNodes.append(node)
         }
 
-        // Guru bead — larger, at the bottom (starting position)
+        // Guru bead — larger, at the top (starting position)
         let guruGeometry = SCNSphere(radius: CGFloat(beadRadius * 1.5))
         guruGeometry.segmentCount = 48
         let guruMaterial = SCNMaterial()
@@ -125,7 +138,7 @@ final class BeadSceneManager {
         let guruNode = SCNNode(geometry: guruGeometry)
         guruNode.position = SCNVector3(0, circleRadius, 0)
         guruNode.name = "guru_bead"
-        scene.rootNode.addChildNode(guruNode)
+        beadRingNode.addChildNode(guruNode)
     }
 
     /// Draw a thin torus as the string connecting the beads
@@ -142,6 +155,7 @@ final class BeadSceneManager {
         let stringNode = SCNNode(geometry: torus)
         stringNode.eulerAngles = SCNVector3(Float.pi / 2, 0, 0)
         stringNode.name = "string"
+        // String stays in scene root (doesn't rotate with beads)
         scene.rootNode.addChildNode(stringNode)
     }
 
@@ -149,9 +163,9 @@ final class BeadSceneManager {
         let displayIndex = currentBeadIndex % displayCount
 
         for (i, node) in beadNodes.enumerated() {
-            let scale: Float = (i == displayIndex) ? 1.35 : 1.0
+            let scale: Float = (i == displayIndex) ? 1.3 : 1.0
             SCNTransaction.begin()
-            SCNTransaction.animationDuration = 0.2
+            SCNTransaction.animationDuration = 0.15
             node.scale = SCNVector3(scale, scale, scale)
             SCNTransaction.commit()
         }
@@ -163,28 +177,59 @@ final class BeadSceneManager {
                 materialType.applyTo(material)
             }
         }
-        if let guru = scene.rootNode.childNode(withName: "guru_bead", recursively: false),
+        if let guru = beadRingNode.childNode(withName: "guru_bead", recursively: false),
            let material = guru.geometry?.materials.first
         {
             materialType.applyTo(material)
         }
     }
 
+    // MARK: - Ring Rotation (real bead sliding feel)
+
+    /// Rotate the entire bead ring by a delta angle (called during pan gesture)
+    func rotateRing(by deltaAngle: Float) {
+        panRotation += deltaAngle
+        beadRingNode.eulerAngles = SCNVector3(0, 0, panRotation)
+    }
+
+    /// Snap the ring to the nearest bead position and advance the count
+    /// Returns the number of bead steps moved (can be 0)
+    @discardableResult
+    func snapToNearestBead() -> Int {
+        // Calculate how many full bead steps we've moved
+        let steps = Int(round(panRotation / anglePerBead))
+        let snappedAngle = Float(steps) * anglePerBead
+
+        SCNTransaction.begin()
+        SCNTransaction.animationDuration = 0.2
+        SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeOut)
+        beadRingNode.eulerAngles = SCNVector3(0, 0, snappedAngle)
+        SCNTransaction.commit()
+
+        panRotation = snappedAngle
+        return steps
+    }
+
+    /// Animate advancing by one bead: rotate the ring + spin the current bead
     func animateBeadForward() {
+        let targetAngle = panRotation - anglePerBead
         let index = currentBeadIndex % displayCount
         guard index < beadNodes.count else { return }
         let node = beadNodes[index]
 
-        // Pulse animation: scale up then back to normal
+        // Rotate the whole ring by one bead step
         SCNTransaction.begin()
-        SCNTransaction.animationDuration = 0.1
-        node.scale = SCNVector3(1.5, 1.5, 1.5)
-        SCNTransaction.completionBlock = {
-            SCNTransaction.begin()
-            SCNTransaction.animationDuration = 0.2
-            node.scale = SCNVector3(1.0, 1.0, 1.0)
-            SCNTransaction.commit()
-        }
+        SCNTransaction.animationDuration = 0.25
+        SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        beadRingNode.eulerAngles = SCNVector3(0, 0, targetAngle)
+
+        // Roll the individual bead on its own axis (tangent direction)
+        let rollAngle = Float.pi * 2.0 // one full spin
+        let currentEuler = node.eulerAngles
+        node.eulerAngles = SCNVector3(currentEuler.x + rollAngle, currentEuler.y, currentEuler.z)
+
         SCNTransaction.commit()
+
+        panRotation = targetAngle
     }
 }

@@ -19,9 +19,9 @@ struct PracticeView: View {
     var body: some View {
         ZStack {
             // 3D Bead Scene
-            BeadSceneView(sceneManager: sceneManager) {
-                onBeadSwipe()
-            }
+            BeadSceneView(sceneManager: sceneManager, onBeadAdvance: {
+                onBeadAdvance()
+            })
             .ignoresSafeArea()
 
             // Counter overlay
@@ -58,10 +58,9 @@ struct PracticeView: View {
         }
     }
 
-    private func onBeadSwipe() {
+    private func onBeadAdvance() {
         viewModel.incrementBead()
         sceneManager.currentBeadIndex = viewModel.currentBeadIndex
-        sceneManager.animateBeadForward()
         hapticService.playBeadTap()
         audioService.playBeadClick()
 
