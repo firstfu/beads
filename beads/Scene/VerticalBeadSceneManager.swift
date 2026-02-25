@@ -262,4 +262,16 @@ final class VerticalBeadSceneManager {
 
         panTranslation = targetY
     }
+
+    /// 重置佛珠列位置至初始狀態
+    /// 當完成一圈（108 顆）後呼叫，將佛珠列平移回起始位置，避免佛珠滾出可見區域
+    func resetColumnPosition() {
+        let initialOffset = orthoScale - beadRadius
+        panTranslation = initialOffset
+        SCNTransaction.begin()
+        SCNTransaction.animationDuration = 0.3
+        SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        beadColumnNode.position = SCNVector3(0, initialOffset, 0)
+        SCNTransaction.commit()
+    }
 }

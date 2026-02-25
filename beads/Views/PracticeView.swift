@@ -137,6 +137,7 @@ struct PracticeView: View {
         audioService.playBeadClick()
 
         if viewModel.didCompleteRound {
+            verticalSceneManager.resetColumnPosition()
             hapticService.playRoundComplete()
             audioService.playRoundComplete()
         }
