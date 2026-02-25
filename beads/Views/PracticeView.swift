@@ -65,6 +65,13 @@ struct PracticeView: View {
         .onAppear {
             viewModel.startSession(mantraName: "南無阿彌陀佛")
             viewModel.loadTodayStats(modelContext: modelContext)
+            if let settings = allSettings.first, settings.ambientSoundEnabled {
+                audioService.isAmbientEnabled = true
+                audioService.ambientVolume = settings.ambientVolume
+                audioService.startAmbient(named: settings.selectedAmbientTrack)
+            } else {
+                audioService.isAmbientEnabled = false
+            }
             #if os(iOS)
             UIApplication.shared.isIdleTimerDisabled = true
             #endif
