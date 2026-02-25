@@ -66,7 +66,7 @@ final class BeadSceneManager {
         let cameraNode = SCNNode()
         cameraNode.camera = SCNCamera()
         cameraNode.camera?.fieldOfView = 55
-        cameraNode.position = SCNVector3(0, 0, 8.5)
+        cameraNode.position = SCNVector3(0, 0, 10.0)
         cameraNode.name = "camera"
         scene.rootNode.addChildNode(cameraNode)
 
