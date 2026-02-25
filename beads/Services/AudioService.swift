@@ -1,8 +1,10 @@
 import AVFoundation
+import Observation
 
+@Observable
 final class AudioService {
-    private var ambientPlayer: AVAudioPlayer?
-    private var sfxPlayer: AVAudioPlayer?
+    @ObservationIgnored private var ambientPlayer: AVAudioPlayer?
+    @ObservationIgnored private var sfxPlayer: AVAudioPlayer?
 
     var isSFXEnabled: Bool = true
     var isAmbientEnabled: Bool = true
@@ -10,6 +12,7 @@ final class AudioService {
         didSet { ambientPlayer?.volume = ambientVolume }
     }
     var sfxVolume: Float = 0.8
+    private(set) var currentAmbientTrack: String?
 
     init() {
         configureAudioSession()
@@ -36,6 +39,11 @@ final class AudioService {
 
     func startAmbient(named name: String) {
         guard isAmbientEnabled else { return }
+        // Don't restart if already playing the same track
+        if currentAmbientTrack == name, ambientPlayer?.isPlaying == true {
+            return
+        }
+        stopAmbient()
         guard let url = Bundle.main.url(forResource: name, withExtension: "mp3", subdirectory: "ambient")
                 ?? Bundle.main.url(forResource: name, withExtension: "mp3") else {
             print("Ambient file not found: \(name).mp3")
@@ -46,6 +54,7 @@ final class AudioService {
             ambientPlayer?.numberOfLoops = -1
             ambientPlayer?.volume = ambientVolume
             ambientPlayer?.play()
+            currentAmbientTrack = name
         } catch {
             print("Ambient audio error: \(error)")
         }
@@ -54,6 +63,7 @@ final class AudioService {
     func stopAmbient() {
         ambientPlayer?.stop()
         ambientPlayer = nil
+        currentAmbientTrack = nil
     }
 
     func fadeOutAmbient(duration: TimeInterval = 1.0) {
@@ -70,6 +80,7 @@ final class AudioService {
         DispatchQueue.main.asyncAfter(deadline: .now() + duration) { [weak self] in
             self?.ambientPlayer?.stop()
             self?.ambientPlayer = nil
+            self?.currentAmbientTrack = nil
         }
     }
 
