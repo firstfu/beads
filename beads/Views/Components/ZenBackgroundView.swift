@@ -294,10 +294,10 @@ struct ZenBackgroundView: View {
     private func drawCornerLotus(
         context: GraphicsContext, size: CGSize, colors: ZenColors
     ) {
-        // 右下角蓮花
+        // 右下角蓮花（距離底部較高，避免被 Tab Bar 遮擋）
         drawDecorativeLotus(
             context: context,
-            center: CGPoint(x: size.width - 60, y: size.height - 100),
+            center: CGPoint(x: size.width - 50, y: size.height * 0.65),
             petalSize: 50,
             color: colors.highlight.opacity(0.08)
         )
@@ -305,7 +305,7 @@ struct ZenBackgroundView: View {
         // 左上角小蓮花
         drawDecorativeLotus(
             context: context,
-            center: CGPoint(x: 40, y: 80),
+            center: CGPoint(x: 40, y: size.height * 0.12),
             petalSize: 30,
             color: colors.highlight.opacity(0.05)
         )
