@@ -129,6 +129,7 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("設定")
+            .tint(BeadsTheme.Colors.accent)
             .onAppear { loadSettings() }
             .onChange(of: currentBeadStyle) { saveSettings() }
             .onChange(of: beadsPerRound) { saveSettings() }

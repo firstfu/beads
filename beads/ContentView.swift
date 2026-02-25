@@ -39,6 +39,7 @@ struct ContentView: View {
                 SettingsView()
             }
         }
+        .tint(BeadsTheme.Colors.accent)
         .environment(audioService)
         .onAppear {
             syncAudioWithSettings()
