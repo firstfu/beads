@@ -44,7 +44,7 @@ struct CounterOverlay: View {
             // 底部區域 — 計數、圈數與統計
             VStack(spacing: 12) {
                 // 計數與圈數
-                HStack(spacing: 16) {
+                HStack(spacing: 0) {
                     // 總計數
                     VStack(spacing: 4) {
                         Text("\(count)")
@@ -55,6 +55,7 @@ struct CounterOverlay: View {
                             .font(.caption)
                             .foregroundStyle(.white.opacity(0.7))
                     }
+                    .frame(width: 80)
 
                     // 分隔線
                     Rectangle()
@@ -64,13 +65,14 @@ struct CounterOverlay: View {
                     // 圈數
                     VStack(spacing: 4) {
                         Text("\(rounds)")
-                            .font(.system(size: 32, weight: .thin, design: .rounded))
+                            .font(.system(size: 48, weight: .thin, design: .rounded))
                             .foregroundStyle(.white)
                             .contentTransition(.numericText())
                         Text("圈")
                             .font(.caption)
                             .foregroundStyle(.white.opacity(0.7))
                     }
+                    .frame(width: 80)
                 }
                 .padding(.horizontal, 24)
                 .padding(.vertical, 12)
