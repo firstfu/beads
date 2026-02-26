@@ -51,6 +51,8 @@ struct PracticeView: View {
     @State private var sceneManager = BeadSceneManager()
     /// 直列佛珠 3D 場景管理器
     @State private var verticalSceneManager = VerticalBeadSceneManager()
+    /// 手串佛珠 3D 場景管理器
+    @State private var braceletSceneManager = BraceletBeadSceneManager()
     /// 觸感回饋服務，負責撥珠和完成回合時的震動回饋
     @State private var hapticService = HapticService()
     /// 音訊服務實例，從環境中注入，用於播放撥珠音效和背景音樂
@@ -68,7 +70,7 @@ struct PracticeView: View {
     var body: some View {
         ZStack {
             // 背景層：禪意背景
-            ZenBackgroundView(theme: currentBackgroundTheme, isCircularLayout: displayMode == .circular)
+            ZenBackgroundView(theme: currentBackgroundTheme, isCircularLayout: displayMode == .circular || displayMode == .bracelet)
 
             // 3D 佛珠場景 - 根據顯示模式切換
             beadSceneContent
@@ -96,6 +98,7 @@ struct PracticeView: View {
         .onAppear {
             sceneManager.materialType = currentMaterialType
             verticalSceneManager.materialType = currentMaterialType
+            braceletSceneManager.materialType = currentMaterialType
             viewModel.startSession(mantraName: "南無阿彌陀佛")
             viewModel.loadTodayStats(modelContext: modelContext)
             #if os(iOS)
@@ -111,6 +114,7 @@ struct PracticeView: View {
         .onChange(of: allSettings.first?.currentBeadStyle) {
             sceneManager.materialType = currentMaterialType
             verticalSceneManager.materialType = currentMaterialType
+            braceletSceneManager.materialType = currentMaterialType
         }
         .alert("確定要重置計數嗎？", isPresented: $showResetConfirm) {
             Button("取消", role: .cancel) { }
@@ -118,6 +122,7 @@ struct PracticeView: View {
                 viewModel.resetCount()
                 sceneManager.currentBeadIndex = 0
                 verticalSceneManager.currentBeadIndex = 0
+                braceletSceneManager.currentBeadIndex = 0
             }
         } message: {
             Text("此操作將清除本次修行的所有計數。")
@@ -129,13 +134,19 @@ struct PracticeView: View {
     /// 根據顯示模式回傳對應的佛珠場景視圖
     @ViewBuilder
     private var beadSceneContent: some View {
-        if displayMode == .vertical {
+        switch displayMode {
+        case .vertical:
             VerticalBeadSceneView(sceneManager: verticalSceneManager, onBeadAdvance: {
                 onBeadAdvance()
             }, fastScrollMode: fastScrollMode)
             .ignoresSafeArea()
-        } else {
+        case .circular:
             BeadSceneView(sceneManager: sceneManager, onBeadAdvance: {
+                onBeadAdvance()
+            }, fastScrollMode: fastScrollMode)
+            .ignoresSafeArea()
+        case .bracelet:
+            BraceletBeadSceneView(sceneManager: braceletSceneManager, onBeadAdvance: {
                 onBeadAdvance()
             }, fastScrollMode: fastScrollMode)
             .ignoresSafeArea()
@@ -151,6 +162,7 @@ struct PracticeView: View {
         viewModel.incrementBead()
         sceneManager.currentBeadIndex = viewModel.currentBeadIndex
         verticalSceneManager.currentBeadIndex = viewModel.currentBeadIndex
+        braceletSceneManager.currentBeadIndex = viewModel.currentBeadIndex
         hapticService.playBeadTap()
         audioService.playBeadClick()
 

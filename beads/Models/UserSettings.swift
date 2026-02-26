@@ -25,6 +25,9 @@ enum BeadDisplayMode: String, CaseIterable, Identifiable, Codable {
     /// 直立式排列（佛珠排成直線）
     case vertical = "直立式"
 
+    /// 手串式排列（佛珠排成傾斜手環形狀）
+    case bracelet = "手串式"
+
     /// 用於 Identifiable 協定的唯一識別值
     var id: String { rawValue }
 }

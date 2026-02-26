@@ -1,13 +1,13 @@
 // MARK: - 檔案說明
-/// BeadSceneManager.swift
-/// 環形佛珠 3D 場景管理器 - 負責建立和管理環形排列的佛珠場景
+/// BraceletBeadSceneManager.swift
+/// 手串佛珠 3D 場景管理器 - 負責建立和管理傾斜手環形排列的佛珠場景
 /// 模組：Scene
 
 //
-//  BeadSceneManager.swift
+//  BraceletBeadSceneManager.swift
 //  beads
 //
-//  Created by firstfu on 2026/2/25.
+//  Created by firstfu on 2026/2/27.
 //
 
 import SceneKit
@@ -18,10 +18,11 @@ import SceneKit
     import UIKit
 #endif
 
-/// 環形佛珠場景管理器
-/// 負責建立 SceneKit 3D 場景，包含佛珠環形排列、材質設定、燈光配置、
+/// 手串佛珠場景管理器
+/// 負責建立 SceneKit 3D 場景，包含佛珠環形排列並沿 X 軸傾斜約 60°，
+/// 呈現手串（手環/手鍊）的 3D 透視效果。材質設定、燈光配置、
 /// 母珠標記、佛珠高亮顯示及手勢驅動的旋轉動畫
-final class BeadSceneManager {
+final class BraceletBeadSceneManager {
     /// 場景物件，包含所有 3D 節點
     let scene: SCNScene
     /// 所有佛珠節點的陣列
@@ -43,6 +44,9 @@ final class BeadSceneManager {
     /// 佛珠環容器節點 - 旋轉此節點以模擬佛珠滑動效果
     private let beadRingNode = SCNNode()
 
+    /// 手環傾斜角度（沿 X 軸傾斜約 60°）
+    private let tiltAngle: Float = -Float.pi / 3
+
     /// 每顆佛珠對應的角度步幅（弧度），供手勢處理使用
     private(set) var anglePerBead: Float = 0
 
@@ -59,7 +63,7 @@ final class BeadSceneManager {
         didSet { applyMaterial() }
     }
 
-    /// 初始化環形佛珠場景管理器
+    /// 初始化手串佛珠場景管理器
     /// - Parameter beadCount: 佛珠總數，預設 108，上限 108
     init(beadCount: Int = 108) {
         self.beadCount = min(beadCount, 108)
@@ -84,11 +88,12 @@ final class BeadSceneManager {
             scene.background.contents = UIColor.clear
         #endif
 
-        // 攝影機 — 定位以完整呈現佛珠圓環
+        // 攝影機 — 略微偏上方俯視手環，呈現自然的手串視角
         let cameraNode = SCNNode()
         cameraNode.camera = SCNCamera()
         cameraNode.camera?.fieldOfView = 55
-        cameraNode.position = SCNVector3(0, 0, 10.0)
+        cameraNode.position = SCNVector3(0, 3.0, 9.0)
+        cameraNode.eulerAngles = SCNVector3(-Float.pi / 12, 0, 0)
         cameraNode.name = "camera"
         scene.rootNode.addChildNode(cameraNode)
 
@@ -127,9 +132,11 @@ final class BeadSceneManager {
 
     /// 建立佛珠環形排列
     /// 在圓形軌道上均勻排列佛珠節點，並在頂部建立較大的母珠
+    /// 整個環形容器沿 X 軸傾斜，呈現手串的 3D 視角
     private func createBeads() {
-        // 將環形容器加入場景
+        // 將環形容器加入場景，並沿 X 軸傾斜
         beadRingNode.name = "bead_ring"
+        beadRingNode.eulerAngles = SCNVector3(tiltAngle, 0, 0)
         scene.rootNode.addChildNode(beadRingNode)
 
         let beadGeometry = SCNSphere(radius: CGFloat(beadRadius))
@@ -150,13 +157,11 @@ final class BeadSceneManager {
             node.name = "bead_\(i)"
             beadRingNode.addChildNode(node)
             beadNodes.append(node)
-
         }
-
     }
 
     /// 繪製串線
-    /// 使用細環面（Torus）作為連接佛珠的串線，串線不隨佛珠旋轉
+    /// 使用細環面（Torus）作為連接佛珠的串線，串線隨手環傾斜但不隨佛珠旋轉
     private func createString() {
         let torus = SCNTorus(ringRadius: CGFloat(circleRadius), pipeRadius: 0.015)
         let stringMaterial = SCNMaterial()
@@ -168,18 +173,20 @@ final class BeadSceneManager {
         torus.materials = [stringMaterial]
 
         let stringNode = SCNNode(geometry: torus)
-        stringNode.eulerAngles = SCNVector3(Float.pi / 2, 0, 0)
+        // Torus 預設在 XZ 平面，需旋轉至 XY 平面再配合手環傾斜
+        stringNode.eulerAngles = SCNVector3(Float.pi / 2 + tiltAngle, 0, 0)
         stringNode.name = "string"
-        // 串線留在場景根節點（不隨佛珠旋轉）
+        // 串線留在場景根節點（不隨佛珠旋轉但隨手環傾斜）
         scene.rootNode.addChildNode(stringNode)
     }
 
     /// 高亮顯示目前佛珠
     private func highlightCurrentBead() {
-        // 不做放大效果
+        // 不做放大效果（與環形模式一致）
     }
 
     /// 套用材質至所有佛珠
+    /// 將目前 materialType 的屬性套用到所有佛珠，母珠（bead_0）使用刻印卍字材質
     private func applyMaterial() {
         for node in beadNodes {
             if let geometry = node.geometry, let material = geometry.materials.first {
@@ -191,11 +198,12 @@ final class BeadSceneManager {
     // MARK: - 佛珠環旋轉（真實滑動感）
 
     /// 旋轉整個佛珠環
-    /// 在拖曳手勢期間呼叫，將佛珠環沿 Z 軸旋轉指定的角度差量
+    /// 在拖曳手勢期間呼叫，將佛珠環沿局部 Z 軸旋轉指定的角度差量
+    /// （由於環形容器已傾斜，局部 Z 軸旋轉呈現手環滾動效果）
     /// - Parameter deltaAngle: 旋轉角度差量（弧度）
     func rotateRing(by deltaAngle: Float) {
         panRotation += deltaAngle
-        beadRingNode.eulerAngles = SCNVector3(0, 0, panRotation)
+        beadRingNode.eulerAngles = SCNVector3(tiltAngle, 0, panRotation)
     }
 
     /// 吸附至最近的佛珠位置
@@ -210,7 +218,7 @@ final class BeadSceneManager {
         SCNTransaction.begin()
         SCNTransaction.animationDuration = 0.2
         SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeOut)
-        beadRingNode.eulerAngles = SCNVector3(0, 0, snappedAngle)
+        beadRingNode.eulerAngles = SCNVector3(tiltAngle, 0, snappedAngle)
         SCNTransaction.commit()
 
         panRotation = snappedAngle
@@ -229,7 +237,7 @@ final class BeadSceneManager {
         SCNTransaction.begin()
         SCNTransaction.animationDuration = 0.25
         SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-        beadRingNode.eulerAngles = SCNVector3(0, 0, targetAngle)
+        beadRingNode.eulerAngles = SCNVector3(tiltAngle, 0, targetAngle)
 
         // 讓單顆佛珠沿切線方向自轉（完整一圈）
         let rollAngle = Float.pi * 2.0
