@@ -19,6 +19,9 @@ import SwiftData
 /// 負責在應用程式首次啟動或版本升級時，將預設的咒語與佛號資料寫入資料庫
 /// 使用 UserDefaults 記錄種子資料版本，確保資料可隨版本演進而更新
 struct MantraSeedData {
+    /// 種子資料條目型別別名
+    typealias SeedEntry = (name: String, originalText: String, pinyinText: String, descriptionText: String, category: String, suggestedCount: Int, sortOrder: Int)
+
     // MARK: - 版本控制常數
 
     /// UserDefaults 中儲存種子資料版本的鍵值
