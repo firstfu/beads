@@ -69,6 +69,8 @@ struct PracticeView: View {
     @State private var meritPopupOffset: CGFloat = 0
     /// 功德彈出文字的透明度（用於淡出動畫）
     @State private var meritPopupOpacity: Double = 1.0
+    /// 是否顯示回向 Sheet
+    @State private var showDedicationSheet = false
 
     /// 主視圖內容，根據顯示模式切換環形或直列佛珠場景，並疊加計數器與功德動畫
     var body: some View {
@@ -88,6 +90,31 @@ struct PracticeView: View {
                 mantraName: viewModel.mantraName
             )
             .allowsHitTesting(false)
+
+            // 結束修行按鈕（右上角）
+            VStack {
+                HStack {
+                    Spacer()
+                    if viewModel.isActive && viewModel.count > 0 {
+                        Button {
+                            showDedicationSheet = true
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "checkmark.circle")
+                                Text("結束修行")
+                            }
+                            .font(.subheadline)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(.ultraThinMaterial)
+                            .clipShape(Capsule())
+                        }
+                        .padding(.trailing, 16)
+                        .padding(.top, 8)
+                    }
+                }
+                Spacer()
+            }
 
             // 「功德+1」彈出動畫
             if showMeritPopup {
@@ -152,6 +179,28 @@ struct PracticeView: View {
             }
         } message: {
             Text("此操作將清除本次修行的所有計數。")
+        }
+        .sheet(isPresented: $showDedicationSheet) {
+            DedicationSheetView(
+                onConfirm: { text, target in
+                    viewModel.endSessionAndRestart(
+                        modelContext: modelContext,
+                        dedicationText: text,
+                        dedicationTarget: target
+                    )
+                    sceneManager.currentBeadIndex = 0
+                    verticalSceneManager.currentBeadIndex = 0
+                    braceletSceneManager.currentBeadIndex = 0
+                    showDedicationSheet = false
+                },
+                onSkip: {
+                    viewModel.endSessionAndRestart(modelContext: modelContext)
+                    sceneManager.currentBeadIndex = 0
+                    verticalSceneManager.currentBeadIndex = 0
+                    braceletSceneManager.currentBeadIndex = 0
+                    showDedicationSheet = false
+                }
+            )
         }
     }
 
