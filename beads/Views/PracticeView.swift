@@ -100,6 +100,13 @@ struct PracticeView: View {
             }
         }
         .onAppear {
+            // 同步珠數設定（必須在場景管理器初始化之前）
+            let beadCount = currentBeadsPerRound
+            viewModel.beadsPerRound = beadCount
+            sceneManager = BeadSceneManager(beadCount: beadCount)
+            verticalSceneManager = VerticalBeadSceneManager(beadCount: beadCount)
+            braceletSceneManager = BraceletBeadSceneManager(beadCount: beadCount)
+
             sceneManager.materialType = currentMaterialType
             verticalSceneManager.materialType = currentMaterialType
             braceletSceneManager.materialType = currentMaterialType
