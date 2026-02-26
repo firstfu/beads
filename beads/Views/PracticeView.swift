@@ -44,6 +44,10 @@ struct PracticeView: View {
         }
         return .inkWash
     }
+    /// 目前每圈珠數，從使用者設定中取得
+    private var currentBeadsPerRound: Int {
+        allSettings.first?.beadsPerRound ?? 108
+    }
 
     /// 修行邏輯的 ViewModel，管理計數、回合數等狀態
     @State private var viewModel = PracticeViewModel()
