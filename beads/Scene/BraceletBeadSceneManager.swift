@@ -44,8 +44,8 @@ final class BraceletBeadSceneManager {
     /// 佛珠環容器節點 - 旋轉此節點以模擬佛珠滑動效果
     private let beadRingNode = SCNNode()
 
-    /// 手環傾斜角度（沿 X 軸傾斜約 60°）
-    private let tiltAngle: Float = -Float.pi / 3
+    /// 手環傾斜角度（沿 X 軸傾斜約 70°）
+    private let tiltAngle: Float = -70.0 * Float.pi / 180.0
 
     /// 每顆佛珠對應的角度步幅（弧度），供手勢處理使用
     private(set) var anglePerBead: Float = 0
@@ -91,9 +91,9 @@ final class BraceletBeadSceneManager {
         // 攝影機 — 略微偏上方俯視手環，呈現自然的手串視角
         let cameraNode = SCNNode()
         cameraNode.camera = SCNCamera()
-        cameraNode.camera?.fieldOfView = 55
-        cameraNode.position = SCNVector3(0, 3.0, 9.0)
-        cameraNode.eulerAngles = SCNVector3(-Float.pi / 12, 0, 0)
+        cameraNode.camera?.fieldOfView = 75
+        cameraNode.position = SCNVector3(0, 4.5, 5.5)
+        cameraNode.eulerAngles = SCNVector3(-Float.pi / 5, 0, 0)  // -36°
         cameraNode.name = "camera"
         scene.rootNode.addChildNode(cameraNode)
 
@@ -109,22 +109,30 @@ final class BraceletBeadSceneManager {
         #endif
         scene.rootNode.addChildNode(ambientLight)
 
-        // 主光源 — 帶陰影的方向光
+        // 主光源 — 帶陰影的方向光（更陡角度加強深度感）
         let keyLight = SCNNode()
         keyLight.light = SCNLight()
         keyLight.light?.type = .directional
-        keyLight.light?.intensity = 800
+        keyLight.light?.intensity = 1000
         keyLight.light?.castsShadow = true
-        keyLight.eulerAngles = SCNVector3(-Float.pi / 4, Float.pi / 4, 0)
+        keyLight.eulerAngles = SCNVector3(-Float.pi / 3, Float.pi / 4, 0)
         scene.rootNode.addChildNode(keyLight)
 
-        // 補光燈 — 柔化陰影
+        // 補光燈 — 降低強度增加明暗對比
         let fillLight = SCNNode()
         fillLight.light = SCNLight()
         fillLight.light?.type = .directional
-        fillLight.light?.intensity = 300
+        fillLight.light?.intensity = 200
         fillLight.eulerAngles = SCNVector3(-Float.pi / 6, -Float.pi / 3, 0)
         scene.rootNode.addChildNode(fillLight)
+
+        // Rim light — 從下方微弱打光，勾勒輪廓
+        let rimLight = SCNNode()
+        rimLight.light = SCNLight()
+        rimLight.light?.type = .directional
+        rimLight.light?.intensity = 150
+        rimLight.eulerAngles = SCNVector3(Float.pi / 3, 0, 0)
+        scene.rootNode.addChildNode(rimLight)
 
         createBeads()
         createString()
@@ -161,9 +169,9 @@ final class BraceletBeadSceneManager {
     }
 
     /// 繪製串線
-    /// 使用細環面（Torus）作為連接佛珠的串線，串線隨手環傾斜但不隨佛珠旋轉
+    /// 使用細環面（Torus）作為連接佛珠的串線，放入 beadRingNode 確保與佛珠同平面
     private func createString() {
-        let torus = SCNTorus(ringRadius: CGFloat(circleRadius), pipeRadius: 0.015)
+        let torus = SCNTorus(ringRadius: CGFloat(circleRadius), pipeRadius: 0.012)
         let stringMaterial = SCNMaterial()
         #if os(macOS)
             stringMaterial.diffuse.contents = NSColor(red: 0.35, green: 0.22, blue: 0.10, alpha: 1.0)
@@ -173,11 +181,10 @@ final class BraceletBeadSceneManager {
         torus.materials = [stringMaterial]
 
         let stringNode = SCNNode(geometry: torus)
-        // Torus 預設在 XZ 平面，需旋轉至 XY 平面再配合手環傾斜
-        stringNode.eulerAngles = SCNVector3(Float.pi / 2 + tiltAngle, 0, 0)
+        // 在 beadRingNode 局部座標中，Torus 從 XZ 平面旋轉至 XY 平面即可
+        stringNode.eulerAngles = SCNVector3(Float.pi / 2, 0, 0)
         stringNode.name = "string"
-        // 串線留在場景根節點（不隨佛珠旋轉但隨手環傾斜）
-        scene.rootNode.addChildNode(stringNode)
+        beadRingNode.addChildNode(stringNode)
     }
 
     /// 高亮顯示目前佛珠
