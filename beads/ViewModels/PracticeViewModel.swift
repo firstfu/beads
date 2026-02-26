@@ -88,9 +88,15 @@ final class PracticeViewModel {
 
     /// 結束當前修行場次
     /// 儲存修行記錄到資料庫，並更新每日統計資料
-    /// - Parameter modelContext: SwiftData 模型上下文，用於資料持久化
-    func endSession(modelContext: ModelContext) {
-        guard isActive else { return }
+    /// - Parameters:
+    ///   - modelContext: SwiftData 模型上下文，用於資料持久化
+    ///   - dedicationText: 回向文內容（選填）
+    ///   - dedicationTarget: 回向對象（選填）
+    func endSession(modelContext: ModelContext, dedicationText: String? = nil, dedicationTarget: String? = nil) {
+        guard isActive, count > 0 else {
+            isActive = false
+            return
+        }
         isActive = false
         let endTime = Date()
 
@@ -100,10 +106,30 @@ final class PracticeViewModel {
         session.startTime = sessionStartTime
         session.endTime = endTime
         session.isActive = false
+
+        if let dedicationText {
+            session.dedicationText = dedicationText
+            session.dedicationTarget = dedicationTarget
+            session.hasDedication = true
+        }
+
         modelContext.insert(session)
 
         updateDailyRecord(modelContext: modelContext, count: count, duration: endTime.timeIntervalSince(sessionStartTime ?? endTime))
         try? modelContext.save()
+    }
+
+    /// 結束修行並重置，開始新的修行場次
+    /// 用於使用者主動點擊「結束修行」時的完整流程
+    /// - Parameters:
+    ///   - modelContext: SwiftData 模型上下文
+    ///   - dedicationText: 回向文內容（選填）
+    ///   - dedicationTarget: 回向對象（選填）
+    func endSessionAndRestart(modelContext: ModelContext, dedicationText: String? = nil, dedicationTarget: String? = nil) {
+        endSession(modelContext: modelContext, dedicationText: dedicationText, dedicationTarget: dedicationTarget)
+        resetCount()
+        startSession(mantraName: mantraName)
+        loadTodayStats(modelContext: modelContext)
     }
 
     /// 載入今日的修行統計資料

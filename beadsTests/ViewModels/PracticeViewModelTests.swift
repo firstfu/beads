@@ -96,4 +96,20 @@ struct PracticeViewModelTests {
         let vm = PracticeViewModel()
         #expect(vm.streakDays == 0)
     }
+
+    @Test func endSessionWithDedicationParamsExist() async throws {
+        let vm = PracticeViewModel()
+        vm.startSession(mantraName: "南無阿彌陀佛")
+        vm.incrementBead()
+        vm.incrementBead()
+        #expect(vm.count == 2)
+        #expect(vm.isActive == true)
+    }
+
+    @Test func endSessionSkipsDedicationByDefault() async throws {
+        let vm = PracticeViewModel()
+        vm.startSession(mantraName: "test")
+        vm.incrementBead()
+        #expect(vm.isActive == true)
+    }
 }
