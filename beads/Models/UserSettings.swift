@@ -58,8 +58,14 @@ enum AmbientTrack: String, CaseIterable, Identifiable {
     /// 靜心鋼琴音樂 2
     case piano2 = "piano_2"
 
-    /// 唸佛經誦經
+    /// 唸佛經誦經 1（佛經唸誦）
     case sutraChanting1 = "sutra_chanting_1"
+
+    /// 唸佛經誦經 2（唵誦經 Lo-Fi）
+    case sutraChanting2 = "sutra_chanting_2"
+
+    /// 唸佛經誦經 3（六字大明咒）
+    case sutraChanting3 = "sutra_chanting_3"
 
     /// 用於 Identifiable 協定的唯一識別值
     var id: String { rawValue }
@@ -76,19 +82,21 @@ enum AmbientTrack: String, CaseIterable, Identifiable {
         case .nature2: return "自然之聲 2"
         case .piano1: return "靜心鋼琴 1"
         case .piano2: return "靜心鋼琴 2"
-        case .sutraChanting1: return "唸佛經"
+        case .sutraChanting1: return "唸佛經 1"
+        case .sutraChanting2: return "唸佛經 2"
+        case .sutraChanting3: return "唸佛經 3"
         }
     }
 
     /// 曲目所屬的音樂分類名稱
-    /// - Returns: 分類名稱（禪修冥想、梵唄誦經、自然之聲、輕音樂）
+    /// - Returns: 分類名稱（禪修冥想、梵唄誦經、唸佛經、自然之聲、輕音樂）
     var category: String {
         switch self {
         case .meditation1, .meditation2: return "禪修冥想"
         case .chanting1, .chanting2: return "梵唄誦經"
         case .nature1, .nature2: return "自然之聲"
         case .piano1, .piano2: return "輕音樂"
-        case .sutraChanting1: return "唸佛經"
+        case .sutraChanting1, .sutraChanting2, .sutraChanting3: return "唸佛經"
         }
     }
 

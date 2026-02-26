@@ -90,7 +90,7 @@ struct SettingsView: View {
                 Section("計數設定") {
                     Picker("每圈珠數", selection: $beadsPerRound) {
                         Text("18 顆").tag(18)
-                        Text("21 顆").tag(21)
+                        Text("27 顆").tag(27)
                         Text("36 顆").tag(36)
                         Text("54 顆").tag(54)
                         Text("108 顆").tag(108)

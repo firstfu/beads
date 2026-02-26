@@ -8,7 +8,10 @@
       "mcp__plugin_playwright_playwright__browser_evaluate",
       "Bash(curl:*)",
       "Bash(ls:*)",
-      "Bash(xcodebuild:*)"
+      "Bash(xcodebuild:*)",
+      "Bash(brew list:*)",
+      "Bash(yt-dlp:*)",
+      "Bash(ffmpeg:*)"
     ]
   }
 }

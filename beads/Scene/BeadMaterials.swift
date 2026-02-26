@@ -157,3 +157,119 @@ enum BeadMaterialType: String, CaseIterable, Identifiable {
     }
 
 }
+
+/// 佛珠裝飾工具
+/// 提供在佛珠表面添加佛教符號（如卍字）的功能
+enum BeadDecoration {
+
+    /// 建立卍字符號圖片
+    /// 使用 Core Graphics 繪製金色卍字搭配半透明深色底圓
+    /// - Parameter size: 圖片尺寸（像素，正方形）
+    /// - Returns: 帶有卍字符號的圖片
+    static func createSwastikaImage(size: CGFloat = 512) -> PlatformImage? {
+        #if os(macOS)
+            let image = NSImage(size: NSSize(width: size, height: size))
+            image.lockFocus()
+
+            guard let ctx = NSGraphicsContext.current?.cgContext else {
+                image.unlockFocus()
+                return nil
+            }
+
+            // 繪製半透明深色底圓
+            let circleRect = CGRect(x: size * 0.05, y: size * 0.05, width: size * 0.9, height: size * 0.9)
+            ctx.setFillColor(NSColor(red: 0.1, green: 0.08, blue: 0.05, alpha: 0.6).cgColor)
+            ctx.fillEllipse(in: circleRect)
+
+            // 繪製金色卍字
+            let font = NSFont.systemFont(ofSize: size * 0.5, weight: .bold)
+            let color = NSColor(red: 0.92, green: 0.75, blue: 0.3, alpha: 1.0)
+            let paragraphStyle = NSMutableParagraphStyle()
+            paragraphStyle.alignment = .center
+
+            let attrs: [NSAttributedString.Key: Any] = [
+                .font: font,
+                .foregroundColor: color,
+                .paragraphStyle: paragraphStyle,
+            ]
+
+            let string = "卍"
+            let textSize = string.size(withAttributes: attrs)
+            let point = NSPoint(
+                x: (size - textSize.width) / 2,
+                y: (size - textSize.height) / 2
+            )
+            string.draw(at: point, withAttributes: attrs)
+
+            image.unlockFocus()
+            return image
+        #else
+            let format = UIGraphicsImageRendererFormat()
+            format.opaque = false
+            let renderer = UIGraphicsImageRenderer(size: CGSize(width: size, height: size), format: format)
+            return renderer.image { ctx in
+                let cgCtx = ctx.cgContext
+
+                // 繪製半透明深色底圓
+                let circleRect = CGRect(x: size * 0.05, y: size * 0.05, width: size * 0.9, height: size * 0.9)
+                cgCtx.setFillColor(UIColor(red: 0.1, green: 0.08, blue: 0.05, alpha: 0.6).cgColor)
+                cgCtx.fillEllipse(in: circleRect)
+
+                // 繪製金色卍字
+                let font = UIFont.systemFont(ofSize: size * 0.5, weight: .bold)
+                let color = UIColor(red: 0.92, green: 0.75, blue: 0.3, alpha: 1.0)
+                let paragraphStyle = NSMutableParagraphStyle()
+                paragraphStyle.alignment = .center
+
+                let attrs: [NSAttributedString.Key: Any] = [
+                    .font: font,
+                    .foregroundColor: color,
+                    .paragraphStyle: paragraphStyle,
+                ]
+
+                let string = "卍"
+                let textSize = string.size(withAttributes: attrs)
+                let point = CGPoint(
+                    x: (size - textSize.width) / 2,
+                    y: (size - textSize.height) / 2
+                )
+                string.draw(at: point, withAttributes: attrs)
+            }
+        #endif
+    }
+
+    /// 在佛珠節點表面添加卍字符號
+    /// 建立帶有卍字圖片的圓形平面，貼附於佛珠正面與背面
+    /// - Parameters:
+    ///   - beadNode: 要添加符號的佛珠節點
+    ///   - beadRadius: 佛珠半徑
+    static func addSwastikaSymbol(to beadNode: SCNNode, beadRadius: Float) {
+        guard let image = createSwastikaImage() else { return }
+
+        let planeSize = CGFloat(beadRadius) * 1.5
+        let plane = SCNPlane(width: planeSize, height: planeSize)
+        plane.cornerRadius = planeSize / 2
+
+        let material = SCNMaterial()
+        material.diffuse.contents = image
+        material.isDoubleSided = true
+        material.blendMode = .alpha
+        material.lightingModel = .constant
+        material.writesToDepthBuffer = true
+        material.readsFromDepthBuffer = true
+        plane.materials = [material]
+
+        // 正面符號
+        let frontNode = SCNNode(geometry: plane)
+        frontNode.position = SCNVector3(0, 0, beadRadius * 1.02)
+        frontNode.name = "swastika_front"
+        beadNode.addChildNode(frontNode)
+
+        // 背面符號
+        let backNode = SCNNode(geometry: (plane.copy() as? SCNGeometry) ?? plane)
+        backNode.position = SCNVector3(0, 0, -beadRadius * 1.02)
+        backNode.eulerAngles = SCNVector3(0, Float.pi, 0)
+        backNode.name = "swastika_back"
+        beadNode.addChildNode(backNode)
+    }
+}
