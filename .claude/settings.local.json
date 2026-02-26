@@ -11,7 +11,8 @@
       "Bash(xcodebuild:*)",
       "Bash(brew list:*)",
       "Bash(yt-dlp:*)",
-      "Bash(ffmpeg:*)"
+      "Bash(ffmpeg:*)",
+      "Bash(rm:*)"
     ]
   }
 }
