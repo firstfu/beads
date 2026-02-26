@@ -61,10 +61,10 @@ enum AmbientTrack: String, CaseIterable, Identifiable {
     /// 唸佛經誦經 1（佛經唸誦）
     case sutraChanting1 = "sutra_chanting_1"
 
-    /// 唸佛經誦經 2（唵誦經 Lo-Fi）
+    /// 唸佛經誦經 2（念佛機 六字二音）
     case sutraChanting2 = "sutra_chanting_2"
 
-    /// 唸佛經誦經 3（六字大明咒）
+    /// 唸佛經誦經 3（南無阿彌陀佛 108遍）
     case sutraChanting3 = "sutra_chanting_3"
 
     /// 用於 Identifiable 協定的唯一識別值

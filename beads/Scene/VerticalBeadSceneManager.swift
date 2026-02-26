@@ -149,8 +149,9 @@ final class VerticalBeadSceneManager {
             beadColumnNode.addChildNode(node)
             beadNodes.append(node)
 
-            // 在第一顆佛珠（母珠）上添加卍字符號
-            if i == 0 {
+            // 在畫面正中央的佛珠（母珠）上添加卍字符號
+            let centerIndex = Int(round((orthoScale - beadRadius) / beadSpacing))
+            if i == centerIndex {
                 BeadDecoration.addSwastikaSymbol(to: node, beadRadius: beadRadius)
             }
         }
