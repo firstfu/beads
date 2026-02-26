@@ -177,4 +177,11 @@ final class PracticeViewModel {
         undoStack.removeAll()
         didCompleteRound = false
     }
+
+    /// 更新每圈珠數並重置計數狀態
+    /// - Parameter count: 新的每圈珠數
+    func updateBeadsPerRound(_ count: Int) {
+        beadsPerRound = count
+        resetCount()
+    }
 }
