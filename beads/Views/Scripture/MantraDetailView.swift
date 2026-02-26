@@ -11,6 +11,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 // MARK: - 字體大小列舉
 
@@ -45,6 +46,9 @@ struct MantraDetailView: View {
     /// 要顯示的咒語資料模型
     let mantra: Mantra
 
+    /// 從 SwiftData 查詢所有使用者設定
+    @Query private var allSettings: [UserSettings]
+
     /// 經文字體大小偏好，使用 @AppStorage 持久化
     @AppStorage("scriptureFontSize") private var fontSizeRawValue: Int = ScriptureFontSize.medium.rawValue
 
@@ -59,16 +63,27 @@ struct MantraDetailView: View {
         ScriptureFontSize(rawValue: fontSizeRawValue) ?? .medium
     }
 
+    /// 目前的背景主題，從使用者設定中取得
+    private var currentBackgroundTheme: ZenBackgroundTheme {
+        if let raw = allSettings.first?.backgroundTheme {
+            return ZenBackgroundTheme(rawValue: raw) ?? .inkWash
+        }
+        return .inkWash
+    }
+
     /// 視圖主體
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                originalTextSection
-                pinyinSection
-                descriptionSection
-                suggestedCountSection
+        ZStack {
+            ZenBackgroundView(theme: currentBackgroundTheme, enableLotusDecoration: false)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    originalTextSection
+                    pinyinSection
+                    descriptionSection
+                    suggestedCountSection
+                }
+                .padding()
             }
-            .padding()
         }
         .overlay(alignment: .top) {
             copiedToastOverlay
@@ -98,7 +113,7 @@ struct MantraDetailView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding()
-        .background(Color(.systemGray6))
+        .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
@@ -121,7 +136,7 @@ struct MantraDetailView: View {
                     .foregroundStyle(.secondary)
             }
             .padding()
-            .background(Color(.systemGray6))
+            .background(.ultraThinMaterial)
             .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
@@ -143,7 +158,7 @@ struct MantraDetailView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding()
-            .background(Color(.systemGray6))
+            .background(.ultraThinMaterial)
             .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }

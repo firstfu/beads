@@ -67,7 +67,7 @@ struct PracticeCalendarView: View {
     /// - Returns: 對應的顏色
     private func heatColor(for count: Int) -> Color {
         switch count {
-        case 0: return Color(.systemGray5)
+        case 0: return Color.white.opacity(0.1)
         case 1..<100: return Color.orange.opacity(0.3)
         case 100..<300: return Color.orange.opacity(0.5)
         case 300..<600: return Color.orange.opacity(0.7)

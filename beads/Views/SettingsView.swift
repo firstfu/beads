@@ -45,9 +45,16 @@ struct SettingsView: View {
     /// 背景主題的原始值
     @State private var backgroundTheme: String = ZenBackgroundTheme.inkWash.rawValue
 
+    /// 目前的背景主題列舉值
+    private var currentBackgroundTheme: ZenBackgroundTheme {
+        ZenBackgroundTheme(rawValue: backgroundTheme) ?? .inkWash
+    }
+
     /// 主視圖內容，以表單形式呈現各項設定區段
     var body: some View {
         NavigationStack {
+            ZStack {
+                ZenBackgroundView(theme: currentBackgroundTheme, enableLotusDecoration: false)
             Form {
                 // MARK: - 顯示模式設定
                 Section("顯示模式") {
@@ -139,6 +146,8 @@ struct SettingsView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
+            }
+            .scrollContentBackground(.hidden)
             }
             .navigationTitle("設定")
             .onAppear { loadSettings() }

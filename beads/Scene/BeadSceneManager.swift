@@ -151,9 +151,11 @@ final class BeadSceneManager {
             beadRingNode.addChildNode(node)
             beadNodes.append(node)
 
-            // 在第一顆佛珠（母珠）上添加卍字符號
+            // 母珠使用刻印卍字材質
             if i == 0 {
-                BeadDecoration.addSwastikaSymbol(to: node, beadRadius: beadRadius)
+                let guruMaterial = SCNMaterial()
+                materialType.applyTo(guruMaterial, isGuruBead: true)
+                node.geometry?.materials = [guruMaterial]
             }
         }
 
@@ -184,17 +186,12 @@ final class BeadSceneManager {
     }
 
     /// 套用材質至所有佛珠
-    /// 將目前 materialType 的屬性套用到所有一般佛珠及母珠
+    /// 將目前 materialType 的屬性套用到所有佛珠，母珠（bead_0）使用刻印卍字材質
     private func applyMaterial() {
-        for node in beadNodes {
+        for (index, node) in beadNodes.enumerated() {
             if let geometry = node.geometry, let material = geometry.materials.first {
-                materialType.applyTo(material)
+                materialType.applyTo(material, isGuruBead: index == 0)
             }
-        }
-        if let guru = beadRingNode.childNode(withName: "guru_bead", recursively: false),
-           let material = guru.geometry?.materials.first
-        {
-            materialType.applyTo(material)
         }
     }
 

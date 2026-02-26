@@ -18,12 +18,24 @@ import Charts
 struct RecordsView: View {
     /// SwiftData 模型上下文，用於查詢修行紀錄資料
     @Environment(\.modelContext) private var modelContext
+    /// 從 SwiftData 查詢所有使用者設定
+    @Query private var allSettings: [UserSettings]
     /// 統計資料的 ViewModel，負責載入並計算各項統計數據
     @State private var viewModel = StatsViewModel()
+
+    /// 目前的背景主題，從使用者設定中取得
+    private var currentBackgroundTheme: ZenBackgroundTheme {
+        if let raw = allSettings.first?.backgroundTheme {
+            return ZenBackgroundTheme(rawValue: raw) ?? .inkWash
+        }
+        return .inkWash
+    }
 
     /// 主視圖內容，以捲動清單呈現各項修行統計卡片與圖表
     var body: some View {
         NavigationStack {
+            ZStack {
+                ZenBackgroundView(theme: currentBackgroundTheme, enableLotusDecoration: false)
             ScrollView {
                 VStack(spacing: 16) {
                     // 今日統計卡片
@@ -81,6 +93,7 @@ struct RecordsView: View {
                     )
                 }
                 .padding()
+            }
             }
             .navigationTitle("記錄")
             .onAppear {

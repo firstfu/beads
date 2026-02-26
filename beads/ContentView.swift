@@ -39,6 +39,7 @@ struct ContentView: View {
                 SettingsView()
             }
         }
+        .preferredColorScheme(.dark)
         .environment(audioService)
         .onAppear {
             syncAudioWithSettings()

@@ -89,6 +89,7 @@ struct MantraListView: View {
                                         accentColor: colorForCategory(group.category)
                                     )
                                 }
+                                .listRowBackground(Color.white.opacity(0.08))
                             }
                         } header: {
                             Label(group.category, systemImage: iconForCategory(group.category))
@@ -97,6 +98,7 @@ struct MantraListView: View {
                         }
                     }
                 }
+                .scrollContentBackground(.hidden)
             }
         }
         .searchable(text: $searchText, prompt: "搜尋經咒名稱或拼音")

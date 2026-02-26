@@ -37,6 +37,8 @@ final class VerticalBeadSceneManager {
     private let beadGap: Float = 0.15
     /// 每顆佛珠的間距（直徑加間隙）
     private var beadSpacing: Float { beadRadius * 2.0 + beadGap }
+    /// 母珠索引（畫面正中央的佛珠）
+    private var guruBeadIndex: Int = 0
 
     /// 佛珠直列容器節點 - 沿 Y 軸平移此節點以模擬捲動效果
     private let beadColumnNode = SCNNode()
@@ -139,6 +141,9 @@ final class VerticalBeadSceneManager {
         materialType.applyTo(material)
         beadGeometry.materials = [material]
 
+        // 計算母珠索引（畫面正中央的佛珠）
+        guruBeadIndex = Int(round((orthoScale - beadRadius) / beadSpacing))
+
         // 沿 Y 軸排列所有佛珠，索引 0 在頂部（y = 0），向下遞減
         for i in 0..<beadCount {
             let y = -Float(i) * beadSpacing
@@ -149,10 +154,11 @@ final class VerticalBeadSceneManager {
             beadColumnNode.addChildNode(node)
             beadNodes.append(node)
 
-            // 在畫面正中央的佛珠（母珠）上添加卍字符號
-            let centerIndex = Int(round((orthoScale - beadRadius) / beadSpacing))
-            if i == centerIndex {
-                BeadDecoration.addSwastikaSymbol(to: node, beadRadius: beadRadius)
+            // 母珠使用刻印卍字材質
+            if i == guruBeadIndex {
+                let guruMaterial = SCNMaterial()
+                materialType.applyTo(guruMaterial, isGuruBead: true)
+                node.geometry?.materials = [guruMaterial]
             }
         }
     }
@@ -205,11 +211,11 @@ final class VerticalBeadSceneManager {
     }
 
     /// 套用材質至所有佛珠
-    /// 將目前 materialType 的屬性套用到所有佛珠節點
+    /// 將目前 materialType 的屬性套用到所有佛珠，母珠使用刻印卍字材質
     private func applyMaterial() {
-        for node in beadNodes {
+        for (index, node) in beadNodes.enumerated() {
             if let geometry = node.geometry, let material = geometry.materials.first {
-                materialType.applyTo(material)
+                materialType.applyTo(material, isGuruBead: index == guruBeadIndex)
             }
         }
     }
