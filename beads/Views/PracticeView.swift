@@ -77,8 +77,14 @@ struct PracticeView: View {
     /// 主視圖內容，根據顯示模式切換環形或直列佛珠場景，並疊加計數器與功德動畫
     var body: some View {
         ZStack {
-            // 禪意背景層
+            // 禪意背景層（AR 模式下不顯示，相機畫面即為背景）
+            #if os(iOS)
+            if displayMode != .ar {
+                ZenBackgroundView(theme: currentBackgroundTheme)
+            }
+            #else
             ZenBackgroundView(theme: currentBackgroundTheme)
+            #endif
 
             // 3D 佛珠場景 - 根據顯示模式切換
             beadSceneContent
@@ -91,6 +97,7 @@ struct PracticeView: View {
                 streakDays: viewModel.streakDays,
                 mantraName: viewModel.mantraName
             )
+            .allowsHitTesting(false)
 
             // 「功德+1」彈出動畫
             if showMeritPopup {
