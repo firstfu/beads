@@ -58,6 +58,9 @@ enum AmbientTrack: String, CaseIterable, Identifiable {
     /// 靜心鋼琴音樂 2
     case piano2 = "piano_2"
 
+    /// 唸佛經誦經
+    case sutraChanting1 = "sutra_chanting_1"
+
     /// 用於 Identifiable 協定的唯一識別值
     var id: String { rawValue }
 
@@ -73,6 +76,8 @@ enum AmbientTrack: String, CaseIterable, Identifiable {
         case .nature2: return "自然之聲 2"
         case .piano1: return "靜心鋼琴 1"
         case .piano2: return "靜心鋼琴 2"
+        case .sutraChanting1: return "唸佛經 1"
+        case .sutraChanting2: return "唸佛經 2"
         }
     }
 
@@ -84,6 +89,7 @@ enum AmbientTrack: String, CaseIterable, Identifiable {
         case .chanting1, .chanting2: return "梵唄誦經"
         case .nature1, .nature2: return "自然之聲"
         case .piano1, .piano2: return "輕音樂"
+        case .sutraChanting1, .sutraChanting2: return "唸佛經"
         }
     }
 
@@ -91,7 +97,7 @@ enum AmbientTrack: String, CaseIterable, Identifiable {
     /// 將所有曲目按分類歸類，方便 UI 分組顯示
     /// - Returns: 包含分類名稱與對應曲目陣列的元組陣列
     static var groupedByCategory: [(category: String, tracks: [AmbientTrack])] {
-        let categories = ["禪修冥想", "梵唄誦經", "自然之聲", "輕音樂"]
+        let categories = ["禪修冥想", "梵唄誦經", "唸佛經", "自然之聲", "輕音樂"]
         return categories.map { cat in
             (category: cat, tracks: allCases.filter { $0.category == cat })
         }
