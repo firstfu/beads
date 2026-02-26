@@ -152,17 +152,6 @@ final class BeadSceneManager {
             beadNodes.append(node)
         }
 
-        // 母珠 — 較大顆，位於頂部（起始位置）
-        let guruGeometry = SCNSphere(radius: CGFloat(beadRadius * 1.5))
-        guruGeometry.segmentCount = 48
-        let guruMaterial = SCNMaterial()
-        materialType.applyTo(guruMaterial)
-        guruGeometry.materials = [guruMaterial]
-
-        let guruNode = SCNNode(geometry: guruGeometry)
-        guruNode.position = SCNVector3(0, circleRadius, 0)
-        guruNode.name = "guru_bead"
-        beadRingNode.addChildNode(guruNode)
     }
 
     /// 繪製串線

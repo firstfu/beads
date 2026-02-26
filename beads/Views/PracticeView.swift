@@ -13,10 +13,6 @@
 import SwiftUI
 import SwiftData
 
-#if os(iOS)
-import RealityKit
-#endif
-
 /// 修行主視圖，整合 3D 佛珠場景、撥珠計數、觸感回饋與音效播放
 struct PracticeView: View {
     /// SwiftData 模型上下文，用於讀寫修行紀錄
@@ -55,12 +51,6 @@ struct PracticeView: View {
     @State private var sceneManager = BeadSceneManager()
     /// 直列佛珠 3D 場景管理器
     @State private var verticalSceneManager = VerticalBeadSceneManager()
-    #if os(iOS)
-    /// AR 佛珠場景管理器
-    @State private var arSceneManager = ARBeadSceneManager()
-    /// AR 會話服務
-    @State private var arSessionService = ARSessionService()
-    #endif
     /// 觸感回饋服務，負責撥珠和完成回合時的震動回饋
     @State private var hapticService = HapticService()
     /// 音訊服務實例，從環境中注入，用於播放撥珠音效和背景音樂
@@ -77,14 +67,8 @@ struct PracticeView: View {
     /// 主視圖內容，根據顯示模式切換環形或直列佛珠場景，並疊加計數器與功德動畫
     var body: some View {
         ZStack {
-            // 禪意背景層（AR 模式下不顯示，相機畫面即為背景）
-            #if os(iOS)
-            if displayMode != .ar {
-                ZenBackgroundView(theme: currentBackgroundTheme)
-            }
-            #else
+            // 背景層：禪意背景
             ZenBackgroundView(theme: currentBackgroundTheme)
-            #endif
 
             // 3D 佛珠場景 - 根據顯示模式切換
             beadSceneContent
@@ -112,9 +96,6 @@ struct PracticeView: View {
         .onAppear {
             sceneManager.materialType = currentMaterialType
             verticalSceneManager.materialType = currentMaterialType
-            #if os(iOS)
-            arSceneManager.materialType = currentMaterialType
-            #endif
             viewModel.startSession(mantraName: "南無阿彌陀佛")
             viewModel.loadTodayStats(modelContext: modelContext)
             #if os(iOS)
@@ -130,9 +111,6 @@ struct PracticeView: View {
         .onChange(of: allSettings.first?.currentBeadStyle) {
             sceneManager.materialType = currentMaterialType
             verticalSceneManager.materialType = currentMaterialType
-            #if os(iOS)
-            arSceneManager.materialType = currentMaterialType
-            #endif
         }
         .alert("確定要重置計數嗎？", isPresented: $showResetConfirm) {
             Button("取消", role: .cancel) { }
@@ -140,9 +118,6 @@ struct PracticeView: View {
                 viewModel.resetCount()
                 sceneManager.currentBeadIndex = 0
                 verticalSceneManager.currentBeadIndex = 0
-                #if os(iOS)
-                arSceneManager.currentBeadIndex = 0
-                #endif
             }
         } message: {
             Text("此操作將清除本次修行的所有計數。")
@@ -154,28 +129,6 @@ struct PracticeView: View {
     /// 根據顯示模式回傳對應的佛珠場景視圖
     @ViewBuilder
     private var beadSceneContent: some View {
-        #if os(iOS)
-        if displayMode == .ar {
-            if arSessionService.permissionStatus == .authorized {
-                ARBeadView(sceneManager: arSceneManager, onBeadAdvance: {
-                    onBeadAdvance()
-                }, fastScrollMode: fastScrollMode)
-                .ignoresSafeArea()
-            } else {
-                arPermissionView
-            }
-        } else if displayMode == .vertical {
-            VerticalBeadSceneView(sceneManager: verticalSceneManager, onBeadAdvance: {
-                onBeadAdvance()
-            }, fastScrollMode: fastScrollMode)
-            .ignoresSafeArea()
-        } else {
-            BeadSceneView(sceneManager: sceneManager, onBeadAdvance: {
-                onBeadAdvance()
-            }, fastScrollMode: fastScrollMode)
-            .ignoresSafeArea()
-        }
-        #else
         if displayMode == .vertical {
             VerticalBeadSceneView(sceneManager: verticalSceneManager, onBeadAdvance: {
                 onBeadAdvance()
@@ -187,33 +140,7 @@ struct PracticeView: View {
             }, fastScrollMode: fastScrollMode)
             .ignoresSafeArea()
         }
-        #endif
     }
-
-    // MARK: - AR 權限提示視圖
-
-    #if os(iOS)
-    /// AR 權限未授權時的提示視圖
-    private var arPermissionView: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "camera.fill")
-                .font(.system(size: 60))
-                .foregroundStyle(.secondary)
-            Text("需要相機權限才能使用 AR 模式")
-                .font(.headline)
-            if arSessionService.permissionStatus == .notDetermined {
-                Button("授權相機") {
-                    arSessionService.requestCameraPermission { _ in }
-                }
-                .buttonStyle(.borderedProminent)
-            } else {
-                Text("請至設定 > 隱私權 > 相機中開啟權限")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-        }
-    }
-    #endif
 
     /// 處理撥珠前進事件
     /// - 增加計數並同步佛珠索引至兩個場景管理器
@@ -224,9 +151,6 @@ struct PracticeView: View {
         viewModel.incrementBead()
         sceneManager.currentBeadIndex = viewModel.currentBeadIndex
         verticalSceneManager.currentBeadIndex = viewModel.currentBeadIndex
-        #if os(iOS)
-        arSceneManager.currentBeadIndex = viewModel.currentBeadIndex
-        #endif
         hapticService.playBeadTap()
         audioService.playBeadClick()
 

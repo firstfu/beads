@@ -12,10 +12,6 @@
 
 import SceneKit
 
-#if os(iOS)
-    import RealityKit
-#endif
-
 #if os(macOS)
     import AppKit
     /// 跨平台顏色型別別名，macOS 使用 NSColor
@@ -134,46 +130,4 @@ enum BeadMaterialType: String, CaseIterable, Identifiable {
         }
     }
 
-    // MARK: - RealityKit 材質
-
-    #if os(iOS)
-    /// 建立 RealityKit PhysicallyBasedMaterial
-    /// 將現有 PBR 屬性轉換為 RealityKit 材質系統
-    /// - Returns: 設定好的 PhysicallyBasedMaterial
-    @MainActor
-    func createRealityKitMaterial() -> any RealityKit.Material {
-        var material = PhysicallyBasedMaterial()
-
-        // 漫反射色
-        let color = diffuseColor
-        material.baseColor = .init(tint: color)
-
-        // 嘗試載入漫反射貼圖
-        if let diffuseImage = UIImage(named: diffuseTextureName),
-           let cgImage = diffuseImage.cgImage,
-           let texture = try? TextureResource.generate(from: cgImage, options: .init(semantic: .color))
-        {
-            material.baseColor = .init(texture: .init(texture))
-        }
-
-        // 嘗試載入法線貼圖
-        if let normalImage = UIImage(named: normalTextureName),
-           let cgImage = normalImage.cgImage,
-           let texture = try? TextureResource.generate(from: cgImage, options: .init(semantic: .normal))
-        {
-            material.normal = .init(texture: .init(texture))
-        }
-
-        // PBR 屬性
-        material.roughness = .init(floatLiteral: Float(roughness))
-        material.metallic = .init(floatLiteral: Float(metalness))
-
-        // 琥珀蜜蠟半透明效果
-        if self == .amber {
-            material.blending = .transparent(opacity: .init(floatLiteral: 0.85))
-        }
-
-        return material
-    }
-    #endif
 }

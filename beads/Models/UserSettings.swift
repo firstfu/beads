@@ -25,9 +25,6 @@ enum BeadDisplayMode: String, CaseIterable, Identifiable, Codable {
     /// 直立式排列（佛珠排成直線）
     case vertical = "直立式"
 
-    /// AR 實境模式（透過擴增實境顯示佛珠）
-    case ar = "AR 實境"
-
     /// 用於 Identifiable 協定的唯一識別值
     var id: String { rawValue }
 }

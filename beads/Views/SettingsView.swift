@@ -53,25 +53,10 @@ struct SettingsView: View {
                 Section("顯示模式") {
                     Picker("佛珠排列", selection: $displayMode) {
                         ForEach(BeadDisplayMode.allCases) { mode in
-                            #if os(iOS)
                             Text(mode.rawValue).tag(mode.rawValue)
-                            #else
-                            if mode != .ar {
-                                Text(mode.rawValue).tag(mode.rawValue)
-                            }
-                            #endif
                         }
                     }
                     .pickerStyle(.segmented)
-
-                    if displayMode == BeadDisplayMode.ar.rawValue {
-                        HStack {
-                            Image(systemName: "arkit")
-                            Text("AR 模式需要相機權限，請將裝置對準平面")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
                 }
 
                 // MARK: - 撥珠手勢設定
