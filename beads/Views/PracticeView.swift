@@ -102,7 +102,7 @@ struct PracticeView: View {
         .onAppear {
             // 同步珠數設定（必須在場景管理器初始化之前）
             let beadCount = currentBeadsPerRound
-            viewModel.beadsPerRound = beadCount
+            viewModel.updateBeadsPerRound(beadCount)
             sceneManager = BeadSceneManager(beadCount: beadCount)
             verticalSceneManager = VerticalBeadSceneManager(beadCount: beadCount)
             braceletSceneManager = BraceletBeadSceneManager(beadCount: beadCount)
@@ -127,17 +127,17 @@ struct PracticeView: View {
             verticalSceneManager.materialType = currentMaterialType
             braceletSceneManager.materialType = currentMaterialType
         }
-        .onChange(of: allSettings.first?.beadsPerRound) {
-            let beadCount = currentBeadsPerRound
-            viewModel.updateBeadsPerRound(beadCount)
+        .onChange(of: allSettings.first?.beadsPerRound) { _, newValue in
+            guard let newValue else { return }
+            viewModel.updateBeadsPerRound(newValue)
 
             // 場景管理器的 beadCount 是 let，需要重建實例
             let material = currentMaterialType
-            sceneManager = BeadSceneManager(beadCount: beadCount)
+            sceneManager = BeadSceneManager(beadCount: newValue)
             sceneManager.materialType = material
-            verticalSceneManager = VerticalBeadSceneManager(beadCount: beadCount)
+            verticalSceneManager = VerticalBeadSceneManager(beadCount: newValue)
             verticalSceneManager.materialType = material
-            braceletSceneManager = BraceletBeadSceneManager(beadCount: beadCount)
+            braceletSceneManager = BraceletBeadSceneManager(beadCount: newValue)
             braceletSceneManager.materialType = material
         }
         .alert("確定要重置計數嗎？", isPresented: $showResetConfirm) {
