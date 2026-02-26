@@ -29,7 +29,7 @@ struct CounterOverlay: View {
     /// 視圖主體
     var body: some View {
         VStack {
-            // 頂部列 — 顯示咒語名稱
+            // 頂部列 — 咒語名稱
             HStack {
                 Text(mantraName)
                     .font(.headline)
@@ -39,46 +39,56 @@ struct CounterOverlay: View {
             .padding(.horizontal, 20)
             .padding(.top, 8)
 
-            // 圈數顯示 — 僅在已有圈數時顯示
-            if rounds > 0 {
-                Text("第 \(rounds) 圈")
-                    .font(.title3)
-                    .foregroundStyle(.white.opacity(0.6))
-                    .padding(.top, 4)
-            }
-
             Spacer()
 
-            // 中央計數顯示 — 大字體總計數與標籤
-            VStack(spacing: 4) {
-                Text("\(count)")
-                    .font(.system(size: 48, weight: .thin, design: .rounded))
-                    .foregroundStyle(.white)
-                    .contentTransition(.numericText())
-                Text("總計數")
-                    .font(.caption)
-                    .foregroundStyle(.white.opacity(0.5))
+            // 底部區域 — 計數、圈數與統計
+            VStack(spacing: 12) {
+                // 計數與圈數
+                HStack(spacing: 16) {
+                    // 總計數
+                    VStack(spacing: 4) {
+                        Text("\(count)")
+                            .font(.system(size: 48, weight: .thin, design: .rounded))
+                            .foregroundStyle(.white)
+                            .contentTransition(.numericText())
+                        Text("總計數")
+                            .font(.caption)
+                            .foregroundStyle(.white.opacity(0.7))
+                    }
+
+                    // 分隔線
+                    Rectangle()
+                        .fill(.white.opacity(0.3))
+                        .frame(width: 1, height: 40)
+
+                    // 圈數
+                    VStack(spacing: 4) {
+                        Text("\(rounds)")
+                            .font(.system(size: 32, weight: .thin, design: .rounded))
+                            .foregroundStyle(.white)
+                            .contentTransition(.numericText())
+                        Text("圈")
+                            .font(.caption)
+                            .foregroundStyle(.white.opacity(0.7))
+                    }
+                }
+                .padding(.horizontal, 24)
+                .padding(.vertical, 12)
+                .background(.black.opacity(0.5))
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+
+                // 統計列 — 今日計數與連續天數
+                HStack {
+                    Label("今日：\(todayCount)", systemImage: "sun.min")
+                        .font(.footnote)
+                        .foregroundStyle(.white.opacity(0.7))
+                    Spacer()
+                    Label("\(streakDays) 天", systemImage: "flame")
+                        .font(.footnote)
+                        .foregroundStyle(.orange.opacity(0.9))
+                }
+                .padding(.horizontal, 20)
             }
-
-            Spacer()
-
-            // 咒語文字顯示
-            Text(mantraName)
-                .font(.title2)
-                .foregroundStyle(.white.opacity(0.9))
-                .padding(.bottom, 8)
-
-            // 底部統計列 — 今日計數與連續天數
-            HStack {
-                Label("今日：\(todayCount)", systemImage: "sun.min")
-                    .font(.footnote)
-                    .foregroundStyle(.white.opacity(0.7))
-                Spacer()
-                Label("\(streakDays) 天", systemImage: "flame")
-                    .font(.footnote)
-                    .foregroundStyle(.orange.opacity(0.9))
-            }
-            .padding(.horizontal, 20)
             .padding(.bottom, 16)
         }
     }

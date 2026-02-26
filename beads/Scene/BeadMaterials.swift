@@ -40,6 +40,14 @@ enum BeadMaterialType: String, CaseIterable, Identifiable {
     case huanghuali = "黃花梨"
     /// 琥珀蜜蠟 - 橙黃色半透明，帶微弱金屬質感
     case amber = "琥珀蜜蠟"
+    /// 沉香 - 深褐色，細膩木紋，層次深度
+    case agarwood = "沉香"
+    /// 檀香 - 淺桃/奶油色，光滑溫潤質感
+    case sandalwood = "檀香"
+    /// 金絲楠木 - 金橙色，可見紋理線條
+    case goldenNanmu = "金絲楠木"
+    /// 黑檀 - 極深色近黑，細膩紋理
+    case ebony = "黑檀"
 
     /// 唯一識別碼，使用 rawValue（材質中文名稱）
     var id: String { rawValue }
@@ -53,6 +61,10 @@ enum BeadMaterialType: String, CaseIterable, Identifiable {
         case .starMoonBodhi: return PlatformColor(red: 0.88, green: 0.83, blue: 0.68, alpha: 1.0)
         case .huanghuali: return PlatformColor(red: 0.72, green: 0.52, blue: 0.25, alpha: 1.0)
         case .amber: return PlatformColor(red: 0.85, green: 0.60, blue: 0.18, alpha: 0.85)
+        case .agarwood: return PlatformColor(red: 0.30, green: 0.18, blue: 0.10, alpha: 1.0)
+        case .sandalwood: return PlatformColor(red: 0.82, green: 0.68, blue: 0.50, alpha: 1.0)
+        case .goldenNanmu: return PlatformColor(red: 0.75, green: 0.55, blue: 0.25, alpha: 1.0)
+        case .ebony: return PlatformColor(red: 0.12, green: 0.10, blue: 0.08, alpha: 1.0)
         }
     }
 
@@ -65,6 +77,10 @@ enum BeadMaterialType: String, CaseIterable, Identifiable {
         case .starMoonBodhi: return 0.4   // 星月菩提打磨後較光滑
         case .huanghuali: return 0.2      // 黃花梨拋光後光澤好
         case .amber: return 0.1           // 琥珀蜜蠟非常光滑通透
+        case .agarwood: return 0.3        // 沉香含油脂，較光滑
+        case .sandalwood: return 0.35     // 檀香木質溫潤
+        case .goldenNanmu: return 0.25    // 金絲楠木拋光後光澤佳
+        case .ebony: return 0.2           // 黑檀非常緻密光滑
         }
     }
 
@@ -74,6 +90,8 @@ enum BeadMaterialType: String, CaseIterable, Identifiable {
         switch self {
         case .zitan: return 0.02          // 紫檀有微弱的油脂光澤
         case .amber: return 0.03          // 琥珀有微弱的樹脂光澤
+        case .agarwood: return 0.02       // 沉香有微弱油脂光澤
+        case .ebony: return 0.01          // 黑檀有微弱光澤
         default: return 0.0
         }
     }
@@ -87,6 +105,10 @@ enum BeadMaterialType: String, CaseIterable, Identifiable {
         case .starMoonBodhi: return "starMoonBodhi_diffuse"
         case .huanghuali: return "huanghuali_diffuse"
         case .amber: return "amber_diffuse"
+        case .agarwood: return "agarwood_diffuse"
+        case .sandalwood: return "sandalwood_diffuse"
+        case .goldenNanmu: return "goldenNanmu_diffuse"
+        case .ebony: return "ebony_diffuse"
         }
     }
 
@@ -99,6 +121,10 @@ enum BeadMaterialType: String, CaseIterable, Identifiable {
         case .starMoonBodhi: return "starMoonBodhi_normal"
         case .huanghuali: return "huanghuali_normal"
         case .amber: return "amber_normal"
+        case .agarwood: return "agarwood_normal"
+        case .sandalwood: return "sandalwood_normal"
+        case .goldenNanmu: return "goldenNanmu_normal"
+        case .ebony: return "ebony_normal"
         }
     }
 
