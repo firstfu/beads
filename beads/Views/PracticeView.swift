@@ -127,6 +127,19 @@ struct PracticeView: View {
             verticalSceneManager.materialType = currentMaterialType
             braceletSceneManager.materialType = currentMaterialType
         }
+        .onChange(of: allSettings.first?.beadsPerRound) {
+            let beadCount = currentBeadsPerRound
+            viewModel.updateBeadsPerRound(beadCount)
+
+            // 場景管理器的 beadCount 是 let，需要重建實例
+            let material = currentMaterialType
+            sceneManager = BeadSceneManager(beadCount: beadCount)
+            sceneManager.materialType = material
+            verticalSceneManager = VerticalBeadSceneManager(beadCount: beadCount)
+            verticalSceneManager.materialType = material
+            braceletSceneManager = BraceletBeadSceneManager(beadCount: beadCount)
+            braceletSceneManager.materialType = material
+        }
         .alert("確定要重置計數嗎？", isPresented: $showResetConfirm) {
             Button("取消", role: .cancel) { }
             Button("重置", role: .destructive) {
