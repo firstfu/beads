@@ -68,7 +68,7 @@ struct PracticeView: View {
     var body: some View {
         ZStack {
             // 背景層：禪意背景
-            ZenBackgroundView(theme: currentBackgroundTheme)
+            ZenBackgroundView(theme: currentBackgroundTheme, isCircularLayout: displayMode == .circular)
 
             // 3D 佛珠場景 - 根據顯示模式切換
             beadSceneContent

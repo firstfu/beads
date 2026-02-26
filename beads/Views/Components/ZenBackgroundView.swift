@@ -100,6 +100,8 @@ struct ZenBackgroundView: View {
     var enableParticles: Bool = true
     /// 是否啟用蓮花裝飾
     var enableLotusDecoration: Bool = true
+    /// 是否為圓圈佈局（蓮花置中）
+    var isCircularLayout: Bool = true
 
     var body: some View {
         TimelineView(.animation) { timeline in
@@ -294,21 +296,30 @@ struct ZenBackgroundView: View {
     private func drawCornerLotus(
         context: GraphicsContext, size: CGSize, colors: ZenColors
     ) {
-        // 右下角蓮花（距離底部較高，避免被 Tab Bar 遮擋）
-        drawDecorativeLotus(
-            context: context,
-            center: CGPoint(x: size.width - 50, y: size.height * 0.65),
-            petalSize: 50,
-            color: colors.highlight.opacity(0.08)
-        )
+        if isCircularLayout {
+            // 圓圈模式：蓮花置中（佛珠圓圈中心）
+            drawDecorativeLotus(
+                context: context,
+                center: CGPoint(x: size.width / 2, y: size.height / 2),
+                petalSize: 50,
+                color: colors.highlight.opacity(0.08)
+            )
+        } else {
+            // 直立模式：角落裝飾
+            drawDecorativeLotus(
+                context: context,
+                center: CGPoint(x: size.width - 50, y: size.height * 0.65),
+                petalSize: 50,
+                color: colors.highlight.opacity(0.08)
+            )
 
-        // 左上角小蓮花
-        drawDecorativeLotus(
-            context: context,
-            center: CGPoint(x: 40, y: size.height * 0.12),
-            petalSize: 30,
-            color: colors.highlight.opacity(0.05)
-        )
+            drawDecorativeLotus(
+                context: context,
+                center: CGPoint(x: 40, y: size.height * 0.12),
+                petalSize: 30,
+                color: colors.highlight.opacity(0.05)
+            )
+        }
     }
 
     private func drawDecorativeLotus(
