@@ -132,8 +132,8 @@ final class UserSettings {
     /// 已選擇的背景音樂曲目識別碼（對應 AmbientTrack 的 rawValue）
     var selectedAmbientTrack: String
 
-    /// 佛珠顯示模式（對應 BeadDisplayMode 的 rawValue，預設為「圓環式」）
-    var displayMode: String = "圓環式"
+    /// 佛珠顯示模式（對應 BeadDisplayMode 的 rawValue，預設為「直立式」）
+    var displayMode: String = "直立式"
 
     /// 是否啟用快速滾動模式（加速撥珠操作）
     var fastScrollMode: Bool = false
@@ -152,7 +152,7 @@ final class UserSettings {
         self.sfxVolume = 0.8
         self.keepScreenOn = true
         self.selectedAmbientTrack = AmbientTrack.meditation1.rawValue
-        self.displayMode = BeadDisplayMode.circular.rawValue
+        self.displayMode = BeadDisplayMode.vertical.rawValue
         self.fastScrollMode = false
         self.backgroundTheme = ZenBackgroundTheme.inkWash.rawValue
     }

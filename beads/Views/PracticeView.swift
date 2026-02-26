@@ -22,9 +22,9 @@ struct PracticeView: View {
     /// 目前的佛珠顯示模式（環形或直列），從使用者設定中取得
     private var displayMode: BeadDisplayMode {
         if let raw = allSettings.first?.displayMode {
-            return BeadDisplayMode(rawValue: raw) ?? .circular
+            return BeadDisplayMode(rawValue: raw) ?? .vertical
         }
-        return .circular
+        return .vertical
     }
     /// 是否啟用快速撥珠模式，從使用者設定中取得
     private var fastScrollMode: Bool {

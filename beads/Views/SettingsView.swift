@@ -39,7 +39,7 @@ struct SettingsView: View {
     /// 是否在修行時保持螢幕常亮
     @State private var keepScreenOn: Bool = true
     /// 佛珠顯示模式的原始值（環形或直列）
-    @State private var displayMode: String = BeadDisplayMode.circular.rawValue
+    @State private var displayMode: String = BeadDisplayMode.vertical.rawValue
     /// 是否啟用快速撥珠模式
     @State private var fastScrollMode: Bool = false
     /// 背景主題的原始值

@@ -123,7 +123,10 @@ struct ZenBackgroundView: View {
                 }
 
                 if enableLotusDecoration {
-                    drawCornerLotus(context: context, size: size, colors: colors)
+                    drawCornerLotus(
+                        context: context, size: size, colors: colors,
+                        animationValue: animationValue
+                    )
                 }
 
                 drawEdgeGlow(context: context, size: size, colors: colors)
@@ -291,71 +294,194 @@ struct ZenBackgroundView: View {
         }
     }
 
-    // MARK: - 繪製角落蓮花裝飾
+    // MARK: - 繪製蓮花裝飾
 
     private func drawCornerLotus(
-        context: GraphicsContext, size: CGSize, colors: ZenColors
+        context: GraphicsContext, size: CGSize, colors: ZenColors,
+        animationValue: Double
     ) {
         if isCircularLayout {
             // 圓圈模式：蓮花置中（佛珠圓圈中心）
             drawDecorativeLotus(
                 context: context,
                 center: CGPoint(x: size.width / 2, y: size.height / 2),
-                petalSize: 50,
-                color: colors.highlight.opacity(0.08)
+                petalSize: 65,
+                colors: colors,
+                animationValue: animationValue
             )
         } else {
             // 直立模式：角落裝飾
             drawDecorativeLotus(
                 context: context,
-                center: CGPoint(x: size.width - 50, y: size.height * 0.65),
-                petalSize: 50,
-                color: colors.highlight.opacity(0.08)
+                center: CGPoint(x: size.width - 55, y: size.height * 0.65),
+                petalSize: 60,
+                colors: colors,
+                animationValue: animationValue
             )
-
             drawDecorativeLotus(
                 context: context,
-                center: CGPoint(x: 40, y: size.height * 0.12),
-                petalSize: 30,
-                color: colors.highlight.opacity(0.05)
+                center: CGPoint(x: 45, y: size.height * 0.12),
+                petalSize: 38,
+                colors: colors,
+                animationValue: animationValue
             )
         }
     }
 
+    /// 繪製完整的多層蓮花
     private func drawDecorativeLotus(
-        context: GraphicsContext, center: CGPoint, petalSize: Double, color: Color
+        context: GraphicsContext, center: CGPoint, petalSize: Double,
+        colors: ZenColors, animationValue: Double
     ) {
-        let petalCount = 6
+        // 溫柔的呼吸脈動
+        let breathScale = 1.0 + sin(animationValue * .pi * 2) * 0.04
+        let s = petalSize * breathScale
 
-        for i in 0..<petalCount {
-            let angle = (2 * .pi * Double(i) / Double(petalCount)) - .pi / 2
-
-            var petalPath = Path()
-            petalPath.move(to: .zero)
-            petalPath.addQuadCurve(
-                to: CGPoint(x: 0, y: -petalSize * 0.8),
-                control: CGPoint(x: petalSize * 0.3, y: -petalSize * 0.5)
+        // ─── 外圈柔光暈 ───
+        let glowR = s * 2.5
+        context.fill(
+            Path(ellipseIn: CGRect(
+                x: center.x - glowR, y: center.y - glowR,
+                width: glowR * 2, height: glowR * 2
+            )),
+            with: .radialGradient(
+                Gradient(stops: [
+                    .init(color: colors.glow.opacity(0.07), location: 0.0),
+                    .init(color: colors.highlight.opacity(0.02), location: 0.4),
+                    .init(color: .clear, location: 1.0),
+                ]),
+                center: center,
+                startRadius: 0,
+                endRadius: glowR
             )
-            petalPath.addQuadCurve(
+        )
+
+        // ─── 外層花瓣（8 瓣）— 寬大、半透明 ───
+        drawPetalRing(
+            context: context, center: center,
+            count: 8, length: s * 1.05, width: s * 0.38,
+            rotation: 0, color: colors.highlight, opacity: 0.08
+        )
+
+        // ─── 中層花瓣（7 瓣）— 錯位排列 ───
+        drawPetalRing(
+            context: context, center: center,
+            count: 7, length: s * 0.78, width: s * 0.30,
+            rotation: .pi / 8, color: colors.highlight, opacity: 0.13
+        )
+
+        // ─── 內層花瓣（5 瓣）— 小巧、聚攏 ───
+        drawPetalRing(
+            context: context, center: center,
+            count: 5, length: s * 0.50, width: s * 0.22,
+            rotation: .pi / 10, color: colors.glow, opacity: 0.16
+        )
+
+        // ─── 花蕊 ───
+        drawLotusCenter(
+            context: context, center: center,
+            radius: s * 0.14, colors: colors
+        )
+    }
+
+    /// 繪製一圈花瓣
+    private func drawPetalRing(
+        context: GraphicsContext, center: CGPoint,
+        count: Int, length: Double, width: Double,
+        rotation: Double, color: Color, opacity: Double
+    ) {
+        for i in 0..<count {
+            let angle = rotation + 2 * .pi * Double(i) / Double(count)
+
+            // 三次貝茲曲線 — 自然飽滿的花瓣輪廓
+            var petal = Path()
+            petal.move(to: .zero)
+            petal.addCurve(
+                to: CGPoint(x: 0, y: -length),
+                control1: CGPoint(x: width * 0.65, y: -length * 0.18),
+                control2: CGPoint(x: width * 0.42, y: -length * 0.72)
+            )
+            petal.addCurve(
                 to: .zero,
-                control: CGPoint(x: -petalSize * 0.3, y: -petalSize * 0.5)
+                control1: CGPoint(x: -width * 0.42, y: -length * 0.72),
+                control2: CGPoint(x: -width * 0.65, y: -length * 0.18)
             )
 
             let transform = CGAffineTransform(translationX: center.x, y: center.y)
                 .rotated(by: angle)
-            let transformedPath = petalPath.applying(transform)
+            let transformed = petal.applying(transform)
+            context.fill(transformed, with: .color(color.opacity(opacity)))
 
-            context.fill(transformedPath, with: .color(color))
+            // 花瓣中脈 — 增添細節層次
+            var midrib = Path()
+            midrib.move(to: CGPoint(x: 0, y: -length * 0.12))
+            midrib.addLine(to: CGPoint(x: 0, y: -length * 0.82))
+            let midribTransformed = midrib.applying(transform)
+            context.stroke(
+                midribTransformed,
+                with: .color(color.opacity(opacity * 0.35)),
+                lineWidth: 0.5
+            )
         }
+    }
 
-        // 中心點
-        let centerDot = Path(
-            ellipseIn: CGRect(
-                x: center.x - petalSize * 0.15, y: center.y - petalSize * 0.15,
-                width: petalSize * 0.3, height: petalSize * 0.3
+    /// 繪製蓮花花蕊（中心漸層＋小點裝飾）
+    private func drawLotusCenter(
+        context: GraphicsContext, center: CGPoint,
+        radius: Double, colors: ZenColors
+    ) {
+        // 花蕊外圍光暈
+        let glowSize = radius * 3
+        context.fill(
+            Path(ellipseIn: CGRect(
+                x: center.x - glowSize, y: center.y - glowSize,
+                width: glowSize * 2, height: glowSize * 2
+            )),
+            with: .radialGradient(
+                Gradient(stops: [
+                    .init(color: colors.glow.opacity(0.18), location: 0.0),
+                    .init(color: colors.highlight.opacity(0.05), location: 0.6),
+                    .init(color: .clear, location: 1.0),
+                ]),
+                center: center,
+                startRadius: 0,
+                endRadius: glowSize
             )
         )
-        context.fill(centerDot, with: .color(color.opacity(0.5)))
+
+        // 中心圓（漸層填充）
+        context.fill(
+            Path(ellipseIn: CGRect(
+                x: center.x - radius, y: center.y - radius,
+                width: radius * 2, height: radius * 2
+            )),
+            with: .radialGradient(
+                Gradient(stops: [
+                    .init(color: colors.glow.opacity(0.24), location: 0.0),
+                    .init(color: colors.highlight.opacity(0.12), location: 0.8),
+                    .init(color: colors.highlight.opacity(0.06), location: 1.0),
+                ]),
+                center: center,
+                startRadius: 0,
+                endRadius: radius
+            )
+        )
+
+        // 花蕊小點環
+        let dotCount = 8
+        let dotRing = radius * 1.6
+        for i in 0..<dotCount {
+            let angle = 2 * .pi * Double(i) / Double(dotCount) + .pi / 8
+            let dx = center.x + cos(angle) * dotRing
+            let dy = center.y + sin(angle) * dotRing
+            let ds = radius * 0.25
+            context.fill(
+                Path(ellipseIn: CGRect(
+                    x: dx - ds, y: dy - ds, width: ds * 2, height: ds * 2
+                )),
+                with: .color(colors.glow.opacity(0.16))
+            )
+        }
     }
 
     // MARK: - 繪製邊緣光暈
