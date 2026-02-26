@@ -40,6 +40,15 @@ final class PracticeSession {
     /// 修行場次是否正在進行中
     var isActive: Bool
 
+    /// 回向文內容（使用者選擇的回向文模板全文）
+    var dedicationText: String?
+
+    /// 回向對象（使用者自由輸入的回向對象）
+    var dedicationTarget: String?
+
+    /// 是否已完成回向
+    var hasDedication: Bool = false
+
     /// 當前念珠在本圈中的索引位置（0 到 beadsPerRound-1）
     /// 透過計數取餘數計算，用於 3D 佛珠動畫的定位
     var currentBeadIndex: Int {

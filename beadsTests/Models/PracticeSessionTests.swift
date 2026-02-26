@@ -65,4 +65,21 @@ struct PracticeSessionTests {
         session.endTime = Date()
         #expect(session.duration >= 59 && session.duration <= 61)
     }
+
+    @Test func dedicationFieldsDefaultToNil() async throws {
+        let session = PracticeSession(mantraName: "南無阿彌陀佛")
+        #expect(session.dedicationText == nil)
+        #expect(session.dedicationTarget == nil)
+        #expect(session.hasDedication == false)
+    }
+
+    @Test func setDedicationFields() async throws {
+        let session = PracticeSession(mantraName: "南無阿彌陀佛")
+        session.dedicationText = "願以此功德，普及於一切"
+        session.dedicationTarget = "父母"
+        session.hasDedication = true
+        #expect(session.dedicationText == "願以此功德，普及於一切")
+        #expect(session.dedicationTarget == "父母")
+        #expect(session.hasDedication == true)
+    }
 }
