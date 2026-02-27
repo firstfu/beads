@@ -91,8 +91,8 @@ final class BraceletBeadSceneManager {
         // 攝影機 — 正前方近距離，強透視效果
         let cameraNode = SCNNode()
         cameraNode.camera = SCNCamera()
-        cameraNode.camera?.fieldOfView = 85
-        cameraNode.position = SCNVector3(0, 0, 5.0)
+        cameraNode.camera?.fieldOfView = 75
+        cameraNode.position = SCNVector3(0.8, 0, 6.5)
         cameraNode.eulerAngles = SCNVector3(0, 0, 0)
         cameraNode.name = "camera"
         scene.rootNode.addChildNode(cameraNode)
@@ -245,12 +245,6 @@ final class BraceletBeadSceneManager {
         SCNTransaction.animationDuration = 0.25
         SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
         beadRingNode.eulerAngles = SCNVector3(0, yTilt, targetAngle)
-
-        // 讓單顆佛珠沿切線方向自轉（完整一圈）
-        let rollAngle = Float.pi * 2.0
-        let currentEuler = node.eulerAngles
-        node.eulerAngles = SCNVector3(currentEuler.x + rollAngle, currentEuler.y, currentEuler.z)
-
         SCNTransaction.commit()
 
         panRotation = targetAngle
