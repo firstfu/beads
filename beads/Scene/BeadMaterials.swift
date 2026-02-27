@@ -145,6 +145,7 @@ enum BeadMaterialType: String, CaseIterable, Identifiable {
         // Normal map: apply if available
         if let normalImage = PlatformImage(named: normalTextureName) {
             material.normal.contents = normalImage
+            material.normal.intensity = 1.5
         }
 
         material.roughness.contents = roughness

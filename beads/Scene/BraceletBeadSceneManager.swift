@@ -101,12 +101,12 @@ final class BraceletBeadSceneManager {
         // 景深效果 — 前排佛珠清晰、後排微模糊，增強空間感
         cameraNode.camera?.wantsDepthOfField = true
         cameraNode.camera?.focusDistance = 7.5
-        cameraNode.camera?.fStop = 5.6
+        cameraNode.camera?.fStop = 3.5
         cameraNode.camera?.apertureBladeCount = 6
 
         // SSAO — 佛珠之間自然產生環境遮蔽陰影
-        cameraNode.camera?.screenSpaceAmbientOcclusionIntensity = 0.5
-        cameraNode.camera?.screenSpaceAmbientOcclusionRadius = 5.0
+        cameraNode.camera?.screenSpaceAmbientOcclusionIntensity = 0.8
+        cameraNode.camera?.screenSpaceAmbientOcclusionRadius = 8.0
         cameraNode.camera?.screenSpaceAmbientOcclusionDepthThreshold = 0.2
 
         scene.rootNode.addChildNode(cameraNode)
@@ -115,7 +115,7 @@ final class BraceletBeadSceneManager {
         let ambientLight = SCNNode()
         ambientLight.light = SCNLight()
         ambientLight.light?.type = .ambient
-        ambientLight.light?.intensity = 300
+        ambientLight.light?.intensity = 280
         #if os(macOS)
             ambientLight.light?.color = NSColor(white: 0.9, alpha: 1.0)
         #else
@@ -127,8 +127,15 @@ final class BraceletBeadSceneManager {
         let keyLight = SCNNode()
         keyLight.light = SCNLight()
         keyLight.light?.type = .directional
-        keyLight.light?.intensity = 1000
+        keyLight.light?.intensity = 800
         keyLight.light?.castsShadow = true
+        keyLight.light?.shadowMapSize = CGSize(width: 2048, height: 2048)
+        keyLight.light?.shadowRadius = 3.0
+        #if os(macOS)
+            keyLight.light?.shadowColor = NSColor(white: 0, alpha: 0.5)
+        #else
+            keyLight.light?.shadowColor = UIColor(white: 0, alpha: 0.5)
+        #endif
         keyLight.eulerAngles = SCNVector3(-Float.pi / 3, Float.pi / 4, 0)
         scene.rootNode.addChildNode(keyLight)
 
@@ -147,6 +154,19 @@ final class BraceletBeadSceneManager {
         rimLight.light?.intensity = 250
         rimLight.eulerAngles = SCNVector3(0, Float.pi, 0)
         scene.rootNode.addChildNode(rimLight)
+
+        // 前方聚光燈 — 照亮前排佛珠，加深前後明暗對比
+        let frontLight = SCNNode()
+        frontLight.light = SCNLight()
+        frontLight.light?.type = .spot
+        frontLight.light?.intensity = 150
+        frontLight.light?.spotInnerAngle = 40
+        frontLight.light?.spotOuterAngle = 70
+        frontLight.light?.attenuationStartDistance = 5
+        frontLight.light?.attenuationEndDistance = 15
+        frontLight.position = SCNVector3(0, 0, 7.0)
+        frontLight.eulerAngles = SCNVector3(0, 0, 0)
+        scene.rootNode.addChildNode(frontLight)
 
         createBeads()
         createString()
