@@ -41,7 +41,9 @@ final class BraceletBeadSceneManager {
     /// 實際顯示在圓環上的佛珠數量（受圓周長限制）
     private var displayCount: Int = 0
 
-    /// 佛珠環容器節點 - 旋轉此節點以模擬佛珠滑動效果
+    /// 傾斜容器節點 - 負責 Y 軸傾斜 + X 軸偏移置中
+    private let tiltNode = SCNNode()
+    /// 佛珠環容器節點 - 只負責 Z 軸旋轉（撥珠滑動）
     private let beadRingNode = SCNNode()
 
     /// Y 軸旋轉角度（大角度側視產生強透視效果）
@@ -92,7 +94,7 @@ final class BraceletBeadSceneManager {
         let cameraNode = SCNNode()
         cameraNode.camera = SCNCamera()
         cameraNode.camera?.fieldOfView = 75
-        cameraNode.position = SCNVector3(0.8, 0, 6.5)
+        cameraNode.position = SCNVector3(0, 0, 6.5)
         cameraNode.eulerAngles = SCNVector3(0, 0, 0)
         cameraNode.name = "camera"
         scene.rootNode.addChildNode(cameraNode)
@@ -142,10 +144,16 @@ final class BraceletBeadSceneManager {
     /// 在圓形軌道上均勻排列佛珠節點，並在頂部建立較大的母珠
     /// Y 軸微傾增加立體感
     private func createBeads() {
-        // 將環形容器加入場景，Y 軸微傾增加立體感
+        // tiltNode 負責 Y 軸傾斜 + X 軸偏移置中
+        tiltNode.name = "tilt_container"
+        tiltNode.eulerAngles = SCNVector3(0, yTilt, 0)
+        tiltNode.position = SCNVector3(0.5, 0, 0)
+        scene.rootNode.addChildNode(tiltNode)
+
+        // beadRingNode 只負責 Z 軸旋轉（撥珠滑動）
         beadRingNode.name = "bead_ring"
-        beadRingNode.eulerAngles = SCNVector3(0, yTilt, 0)
-        scene.rootNode.addChildNode(beadRingNode)
+        beadRingNode.eulerAngles = SCNVector3(0, 0, 0)
+        tiltNode.addChildNode(beadRingNode)
 
         let beadGeometry = SCNSphere(radius: CGFloat(beadRadius))
         beadGeometry.segmentCount = 48
@@ -210,7 +218,7 @@ final class BraceletBeadSceneManager {
     /// - Parameter deltaAngle: 旋轉角度差量（弧度）
     func rotateRing(by deltaAngle: Float) {
         panRotation += deltaAngle
-        beadRingNode.eulerAngles = SCNVector3(0, yTilt, panRotation)
+        beadRingNode.eulerAngles = SCNVector3(0, 0, panRotation)
     }
 
     /// 吸附至最近的佛珠位置
@@ -225,7 +233,7 @@ final class BraceletBeadSceneManager {
         SCNTransaction.begin()
         SCNTransaction.animationDuration = 0.2
         SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeOut)
-        beadRingNode.eulerAngles = SCNVector3(0, yTilt, snappedAngle)
+        beadRingNode.eulerAngles = SCNVector3(0, 0, snappedAngle)
         SCNTransaction.commit()
 
         panRotation = snappedAngle
@@ -233,18 +241,17 @@ final class BraceletBeadSceneManager {
     }
 
     /// 動畫推進一顆佛珠
-    /// 將佛珠環旋轉一個步幅，同時讓目前佛珠自轉一圈，帶緩入緩出動畫
+    /// 將佛珠環旋轉一個步幅，帶緩入緩出動畫
     func animateBeadForward() {
         let targetAngle = panRotation - anglePerBead
         let index = currentBeadIndex % displayCount
         guard index < beadNodes.count else { return }
-        let node = beadNodes[index]
 
         // 將整個佛珠環旋轉一個步幅
         SCNTransaction.begin()
         SCNTransaction.animationDuration = 0.25
         SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-        beadRingNode.eulerAngles = SCNVector3(0, yTilt, targetAngle)
+        beadRingNode.eulerAngles = SCNVector3(0, 0, targetAngle)
         SCNTransaction.commit()
 
         panRotation = targetAngle

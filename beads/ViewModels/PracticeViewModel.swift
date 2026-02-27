@@ -90,8 +90,8 @@ final class PracticeViewModel {
     /// 儲存修行記錄到資料庫，並更新每日統計資料
     /// - Parameters:
     ///   - modelContext: SwiftData 模型上下文，用於資料持久化
-    ///   - dedicationText: 回向文內容（選填）
-    ///   - dedicationTarget: 回向對象（選填）
+    ///   - dedicationText: 迴向文內容（選填）
+    ///   - dedicationTarget: 迴向對象（選填）
     func endSession(modelContext: ModelContext, dedicationText: String? = nil, dedicationTarget: String? = nil) {
         guard isActive, count > 0 else {
             isActive = false
@@ -123,8 +123,8 @@ final class PracticeViewModel {
     /// 用於使用者主動點擊「結束修行」時的完整流程
     /// - Parameters:
     ///   - modelContext: SwiftData 模型上下文
-    ///   - dedicationText: 回向文內容（選填）
-    ///   - dedicationTarget: 回向對象（選填）
+    ///   - dedicationText: 迴向文內容（選填）
+    ///   - dedicationTarget: 迴向對象（選填）
     func endSessionAndRestart(modelContext: ModelContext, dedicationText: String? = nil, dedicationTarget: String? = nil) {
         endSession(modelContext: modelContext, dedicationText: dedicationText, dedicationTarget: dedicationTarget)
         resetCount()

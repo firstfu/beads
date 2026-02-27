@@ -69,7 +69,7 @@ struct PracticeView: View {
     @State private var meritPopupOffset: CGFloat = 0
     /// 功德彈出文字的透明度（用於淡出動畫）
     @State private var meritPopupOpacity: Double = 1.0
-    /// 是否顯示回向 Sheet
+    /// 是否顯示迴向 Sheet
     @State private var showDedicationSheet = false
 
     /// 主視圖內容，根據顯示模式切換環形或直列佛珠場景，並疊加計數器與功德動畫

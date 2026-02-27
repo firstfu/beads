@@ -23,6 +23,10 @@ struct RecordsView: View {
     @Environment(\.modelContext) private var modelContext
     /// 從 SwiftData 查詢所有使用者設定
     @Query private var allSettings: [UserSettings]
+    /// 查詢所有有迴向的修行場次
+    @Query(filter: #Predicate<PracticeSession> { $0.hasDedication == true },
+           sort: \PracticeSession.endTime, order: .reverse)
+    private var dedicatedSessions: [PracticeSession]
     /// 統計資料的 ViewModel，負責載入並計算各項統計數據
     @State private var viewModel = StatsViewModel()
     /// 出場動畫狀態
@@ -70,6 +74,14 @@ struct RecordsView: View {
                             .opacity(appeared ? 1 : 0)
                             .offset(y: appeared ? 0 : 15)
                             .animation(.easeOut(duration: 0.5).delay(0.3), value: appeared)
+
+                        // MARK: - 迴向紀錄
+                        if !dedicatedSessions.isEmpty {
+                            dedicationSection
+                                .opacity(appeared ? 1 : 0)
+                                .offset(y: appeared ? 0 : 15)
+                                .animation(.easeOut(duration: 0.5).delay(0.4), value: appeared)
+                        }
                     }
                     .padding()
                 }
@@ -196,6 +208,49 @@ struct RecordsView: View {
             sectionHeader("修行日曆")
 
             PracticeCalendarView(records: viewModel.monthlyRecords)
+        }
+        .padding()
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+
+    // MARK: - 迴向紀錄區塊
+
+    /// 迴向紀錄摘要卡片，點擊導航至完整迴向歷史列表
+    private var dedicationSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader("迴向紀錄")
+
+            NavigationLink(destination: DedicationHistoryView()) {
+                HStack(spacing: 14) {
+                    // 左側圖示
+                    Image(systemName: "hands.and.sparkles")
+                        .font(.title2)
+                        .foregroundStyle(zenGold)
+                        .frame(width: 40, height: 40)
+                        .background(zenGold.opacity(0.15))
+                        .clipShape(Circle())
+
+                    // 中間資訊
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("共 \(dedicatedSessions.count) 次迴向")
+                            .font(.subheadline.weight(.medium))
+                        if let latest = dedicatedSessions.first {
+                            Text("最近：\(latest.dedicationTarget ?? "迴向法界眾生")")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                        }
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .buttonStyle(.plain)
         }
         .padding()
         .background(.ultraThinMaterial)

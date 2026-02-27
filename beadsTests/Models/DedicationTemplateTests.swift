@@ -16,7 +16,7 @@ struct DedicationTemplateTests {
 
     @Test func universalTemplateContent() async throws {
         let template = DedicationTemplate.universal
-        #expect(template.name == "通用回向文")
+        #expect(template.name == "通用迴向文")
         #expect(template.fullText.contains("願以此功德"))
     }
 }

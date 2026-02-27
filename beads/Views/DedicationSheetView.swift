@@ -1,20 +1,20 @@
 // MARK: - 檔案說明
 /// DedicationSheetView.swift
-/// 回向功德 Sheet - 修行結束後選擇回向文模板並輸入回向對象
+/// 迴向功德 Sheet - 修行結束後選擇迴向文模板並輸入迴向對象
 /// 模組：Views
 
 import SwiftUI
 
-/// 回向功德 Sheet 視圖
-/// 修行結束後彈出，讓使用者選擇回向文模板並輸入回向對象
+/// 迴向功德 Sheet 視圖
+/// 修行結束後彈出，讓使用者選擇迴向文模板並輸入迴向對象
 struct DedicationSheetView: View {
-    /// 選中的回向文模板
+    /// 選中的迴向文模板
     @State private var selectedTemplate: DedicationTemplate = .universal
-    /// 回向對象（自由輸入）
+    /// 迴向對象（自由輸入）
     @State private var dedicationTarget: String = ""
-    /// 確認回向時的回呼，傳回回向文和回向對象
+    /// 確認迴向時的回呼，傳回迴向文和迴向對象
     var onConfirm: (String, String?) -> Void
-    /// 跳過回向時的回呼
+    /// 跳過迴向時的回呼
     var onSkip: () -> Void
 
     var body: some View {
@@ -28,7 +28,7 @@ struct DedicationSheetView: View {
                 }
                 .padding()
             }
-            .navigationTitle("回向功德")
+            .navigationTitle("迴向功德")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -38,7 +38,7 @@ struct DedicationSheetView: View {
                     .foregroundStyle(.secondary)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("確認回向") {
+                    Button("確認迴向") {
                         let target = dedicationTarget.trimmingCharacters(in: .whitespacesAndNewlines)
                         onConfirm(selectedTemplate.fullText, target.isEmpty ? nil : target)
                     }
@@ -57,7 +57,7 @@ struct DedicationSheetView: View {
             Image(systemName: "hands.and.sparkles")
                 .font(.system(size: 40))
                 .foregroundStyle(.yellow.opacity(0.8))
-            Text("將修行功德回向給有緣眾生")
+            Text("將修行功德迴向給有緣眾生")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
@@ -66,7 +66,7 @@ struct DedicationSheetView: View {
 
     private var templateSelectionSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("選擇回向文")
+            Text("選擇迴向文")
                 .font(.headline)
 
             ForEach(DedicationTemplate.allCases) { template in
@@ -99,7 +99,7 @@ struct DedicationSheetView: View {
 
     private var fullTextSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("回向文全文")
+            Text("迴向文全文")
                 .font(.headline)
 
             Text(selectedTemplate.fullText)
@@ -115,7 +115,7 @@ struct DedicationSheetView: View {
 
     private var targetInputSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("回向對象（選填）")
+            Text("迴向對象（選填）")
                 .font(.headline)
 
             TextField("例如：父母、家人、一切有情眾生...", text: $dedicationTarget)
@@ -127,10 +127,10 @@ struct DedicationSheetView: View {
 #Preview {
     DedicationSheetView(
         onConfirm: { text, target in
-            print("回向: \(text), 對象: \(target ?? "無")")
+            print("迴向: \(text), 對象: \(target ?? "無")")
         },
         onSkip: {
-            print("跳過回向")
+            print("跳過迴向")
         }
     )
 }
