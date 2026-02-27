@@ -115,7 +115,7 @@ final class BraceletBeadSceneManager {
         let ambientLight = SCNNode()
         ambientLight.light = SCNLight()
         ambientLight.light?.type = .ambient
-        ambientLight.light?.intensity = 280
+        ambientLight.light?.intensity = 400
         #if os(macOS)
             ambientLight.light?.color = NSColor(white: 0.9, alpha: 1.0)
         #else
@@ -127,7 +127,7 @@ final class BraceletBeadSceneManager {
         let keyLight = SCNNode()
         keyLight.light = SCNLight()
         keyLight.light?.type = .directional
-        keyLight.light?.intensity = 800
+        keyLight.light?.intensity = 600
         keyLight.light?.castsShadow = true
         keyLight.light?.shadowMapSize = CGSize(width: 2048, height: 2048)
         keyLight.light?.shadowRadius = 3.0
@@ -143,7 +143,7 @@ final class BraceletBeadSceneManager {
         let fillLight = SCNNode()
         fillLight.light = SCNLight()
         fillLight.light?.type = .directional
-        fillLight.light?.intensity = 200
+        fillLight.light?.intensity = 250
         fillLight.eulerAngles = SCNVector3(-Float.pi / 6, -Float.pi / 3, 0)
         scene.rootNode.addChildNode(fillLight)
 
@@ -154,19 +154,6 @@ final class BraceletBeadSceneManager {
         rimLight.light?.intensity = 250
         rimLight.eulerAngles = SCNVector3(0, Float.pi, 0)
         scene.rootNode.addChildNode(rimLight)
-
-        // 前方聚光燈 — 照亮前排佛珠，加深前後明暗對比
-        let frontLight = SCNNode()
-        frontLight.light = SCNLight()
-        frontLight.light?.type = .spot
-        frontLight.light?.intensity = 150
-        frontLight.light?.spotInnerAngle = 40
-        frontLight.light?.spotOuterAngle = 70
-        frontLight.light?.attenuationStartDistance = 5
-        frontLight.light?.attenuationEndDistance = 15
-        frontLight.position = SCNVector3(0, 0, 7.0)
-        frontLight.eulerAngles = SCNVector3(0, 0, 0)
-        scene.rootNode.addChildNode(frontLight)
 
         createBeads()
         createString()
