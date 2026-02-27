@@ -111,48 +111,56 @@ final class BraceletBeadSceneManager {
 
         scene.rootNode.addChildNode(cameraNode)
 
-        // 環境光 — 柔和的整體照明
+        // 環境光 — 基礎亮度底線，確保沒有死黑
         let ambientLight = SCNNode()
         ambientLight.light = SCNLight()
         ambientLight.light?.type = .ambient
-        ambientLight.light?.intensity = 400
+        ambientLight.light?.intensity = 350
         #if os(macOS)
-            ambientLight.light?.color = NSColor(white: 0.9, alpha: 1.0)
+            ambientLight.light?.color = NSColor(white: 0.85, alpha: 1.0)
         #else
-            ambientLight.light?.color = UIColor(white: 0.9, alpha: 1.0)
+            ambientLight.light?.color = UIColor(white: 0.85, alpha: 1.0)
         #endif
         scene.rootNode.addChildNode(ambientLight)
 
-        // 主光源 — 帶陰影的方向光（更陡角度加強深度感）
+        // 主光源 — 從右上方 45° 照射，帶陰影的方向光
         let keyLight = SCNNode()
         keyLight.light = SCNLight()
         keyLight.light?.type = .directional
-        keyLight.light?.intensity = 600
+        keyLight.light?.intensity = 800
         keyLight.light?.castsShadow = true
         keyLight.light?.shadowMapSize = CGSize(width: 2048, height: 2048)
         keyLight.light?.shadowRadius = 3.0
         #if os(macOS)
-            keyLight.light?.shadowColor = NSColor(white: 0, alpha: 0.5)
+            keyLight.light?.shadowColor = NSColor(white: 0, alpha: 0.45)
         #else
-            keyLight.light?.shadowColor = UIColor(white: 0, alpha: 0.5)
+            keyLight.light?.shadowColor = UIColor(white: 0, alpha: 0.45)
         #endif
-        keyLight.eulerAngles = SCNVector3(-Float.pi / 3, Float.pi / 4, 0)
+        keyLight.eulerAngles = SCNVector3(-Float.pi / 4, Float.pi / 5, 0)
         scene.rootNode.addChildNode(keyLight)
 
-        // 補光燈 — 降低強度增加明暗對比
+        // 補光燈 — 從左側低角度補光，key:fill ≈ 2.86:1 保留陰影層次
         let fillLight = SCNNode()
         fillLight.light = SCNLight()
         fillLight.light?.type = .directional
-        fillLight.light?.intensity = 250
-        fillLight.eulerAngles = SCNVector3(-Float.pi / 6, -Float.pi / 3, 0)
+        fillLight.light?.intensity = 280
+        fillLight.eulerAngles = SCNVector3(-Float.pi / 8, -Float.pi / 2.5, 0)
         scene.rootNode.addChildNode(fillLight)
 
-        // Rim light — 從後方微弱打光，勾勒前排佛珠輪廓
+        // Top Accent — 從正上方均勻照亮所有佛珠頂部，解決後排太暗問題
+        let topAccent = SCNNode()
+        topAccent.light = SCNLight()
+        topAccent.light?.type = .directional
+        topAccent.light?.intensity = 200
+        topAccent.eulerAngles = SCNVector3(-Float.pi / 2, 0, 0)
+        scene.rootNode.addChildNode(topAccent)
+
+        // Rim light — 從後方偏左下打光，產生邊緣輪廓高光
         let rimLight = SCNNode()
         rimLight.light = SCNLight()
         rimLight.light?.type = .directional
-        rimLight.light?.intensity = 250
-        rimLight.eulerAngles = SCNVector3(0, Float.pi, 0)
+        rimLight.light?.intensity = 180
+        rimLight.eulerAngles = SCNVector3(Float.pi / 12, Float.pi + Float.pi / 6, 0)
         scene.rootNode.addChildNode(rimLight)
 
         createBeads()
@@ -259,14 +267,25 @@ final class BraceletBeadSceneManager {
         return steps
     }
 
-    /// 動畫推進一顆佛珠
-    /// 將佛珠環旋轉一個步幅，帶緩入緩出動畫
+    /// 動畫推進一顆佛珠（往上）
     func animateBeadForward() {
         let targetAngle = panRotation - anglePerBead
         let index = currentBeadIndex % displayCount
         guard index < beadNodes.count else { return }
 
-        // 將整個佛珠環旋轉一個步幅
+        SCNTransaction.begin()
+        SCNTransaction.animationDuration = 0.25
+        SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        beadRingNode.eulerAngles = SCNVector3(0, 0, targetAngle)
+        SCNTransaction.commit()
+
+        panRotation = targetAngle
+    }
+
+    /// 動畫退回一顆佛珠（往下）
+    func animateBeadBackward() {
+        let targetAngle = panRotation + anglePerBead
+
         SCNTransaction.begin()
         SCNTransaction.animationDuration = 0.25
         SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)

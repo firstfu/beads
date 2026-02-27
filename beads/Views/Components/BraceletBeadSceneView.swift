@@ -191,15 +191,24 @@ import SwiftUI
                     hasAdvancedThisGesture = false
 
                 case .changed:
-                    let distance = abs(translation.y)
-                    if distance >= flickThreshold && !hasAdvancedThisGesture && !isAnimating {
-                        hasAdvancedThisGesture = true
-                        isAnimating = true
-                        sceneManager.animateBeadForward()
-                        onBeadAdvance?()
-
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) { [weak self] in
-                            self?.isAnimating = false
+                    if !hasAdvancedThisGesture && !isAnimating {
+                        if -translation.y >= flickThreshold {
+                            // 往上撥 → 佛珠往上（前進），觸發計數
+                            hasAdvancedThisGesture = true
+                            isAnimating = true
+                            sceneManager.animateBeadForward()
+                            onBeadAdvance?()
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) { [weak self] in
+                                self?.isAnimating = false
+                            }
+                        } else if translation.y >= flickThreshold {
+                            // 往下撥 → 佛珠往下（退回），僅視覺移動不計數
+                            hasAdvancedThisGesture = true
+                            isAnimating = true
+                            sceneManager.animateBeadBackward()
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) { [weak self] in
+                                self?.isAnimating = false
+                            }
                         }
                     }
 
