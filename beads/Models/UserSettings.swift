@@ -19,11 +19,11 @@ import SwiftData
 /// 佛珠顯示模式列舉
 /// 定義 3D 佛珠在畫面上的排列方式
 enum BeadDisplayMode: String, CaseIterable, Identifiable, Codable {
-    /// 圓環式排列（佛珠排成環形）
-    case circular = "圓環式"
-
     /// 直立式排列（佛珠排成直線）
     case vertical = "直立式"
+
+    /// 圓環式排列（佛珠排成環形）
+    case circular = "圓環式"
 
     /// 手串式排列（佛珠排成傾斜手環形狀）
     case bracelet = "手串式"
@@ -107,7 +107,7 @@ enum AmbientTrack: String, CaseIterable, Identifiable {
     /// 將所有曲目按分類歸類，方便 UI 分組顯示
     /// - Returns: 包含分類名稱與對應曲目陣列的元組陣列
     static var groupedByCategory: [(category: String, tracks: [AmbientTrack])] {
-        let categories = ["禪修冥想", "梵唄誦經", "唸佛經", "自然之聲", "輕音樂"]
+        let categories = ["唸佛經", "禪修冥想", "梵唄誦經", "自然之聲", "輕音樂"]
         return categories.map { cat in
             (category: cat, tracks: allCases.filter { $0.category == cat })
         }
@@ -167,7 +167,7 @@ final class UserSettings {
         self.ambientVolume = 0.5
         self.sfxVolume = 0.8
         self.keepScreenOn = true
-        self.selectedAmbientTrack = AmbientTrack.meditation1.rawValue
+        self.selectedAmbientTrack = AmbientTrack.sutraChanting1.rawValue
         self.displayMode = BeadDisplayMode.vertical.rawValue
         self.fastScrollMode = false
         self.backgroundTheme = ZenBackgroundTheme.inkWash.rawValue

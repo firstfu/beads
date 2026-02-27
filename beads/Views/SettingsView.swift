@@ -33,7 +33,7 @@ struct SettingsView: View {
     /// 背景音樂音量（0.0 ~ 1.0）
     @State private var ambientVolume: Float = 0.5
     /// 目前選擇的背景音樂曲目識別碼
-    @State private var selectedAmbientTrack: String = AmbientTrack.meditation1.rawValue
+    @State private var selectedAmbientTrack: String = AmbientTrack.sutraChanting1.rawValue
     /// 音效音量（0.0 ~ 1.0）
     @State private var sfxVolume: Float = 0.8
     /// 是否在修行時保持螢幕常亮
@@ -44,6 +44,10 @@ struct SettingsView: View {
     @State private var fastScrollMode: Bool = false
     /// 背景主題的原始值
     @State private var backgroundTheme: String = ZenBackgroundTheme.inkWash.rawValue
+    /// 是否顯示清除資料確認對話框
+    @State private var showDeleteConfirmation = false
+    /// 是否顯示清除成功提示
+    @State private var showDeleteSuccess = false
 
     /// 目前的背景主題列舉值
     private var currentBackgroundTheme: ZenBackgroundTheme {
@@ -137,6 +141,19 @@ struct SettingsView: View {
                     Toggle("修行時螢幕常亮", isOn: $keepScreenOn)
                 }
 
+                // MARK: - 資料管理
+                Section("資料管理") {
+                    Button("清除所有修行紀錄", role: .destructive) {
+                        showDeleteConfirmation = true
+                    }
+                }
+                .alert("確認清除所有資料", isPresented: $showDeleteConfirmation) {
+                    Button("取消", role: .cancel) { }
+                    Button("清除", role: .destructive) { deleteAllData() }
+                } message: {
+                    Text("此操作將刪除所有修行紀錄、迴向紀錄及統計資料，且無法復原。設定不會被清除。")
+                }
+
                 // MARK: - 關於
                 Section("關於") {
                     HStack {
@@ -145,9 +162,20 @@ struct SettingsView: View {
                         Text("1.0.0")
                             .foregroundStyle(.secondary)
                     }
+                    NavigationLink("隱私權政策") {
+                        PrivacyPolicyView()
+                    }
+                    NavigationLink("使用條款") {
+                        TermsOfServiceView()
+                    }
                 }
             }
             .scrollContentBackground(.hidden)
+            .alert("清除完成", isPresented: $showDeleteSuccess) {
+                Button("確定", role: .cancel) { }
+            } message: {
+                Text("所有修行紀錄已清除。")
+            }
             }
             .navigationTitle("設定")
             .onAppear { loadSettings() }
@@ -192,6 +220,18 @@ struct SettingsView: View {
         displayMode = s.displayMode
         fastScrollMode = s.fastScrollMode
         backgroundTheme = s.backgroundTheme
+    }
+
+    /// 清除所有修行紀錄與每日統計資料
+    private func deleteAllData() {
+        do {
+            try modelContext.delete(model: PracticeSession.self)
+            try modelContext.delete(model: DailyRecord.self)
+            try modelContext.save()
+            showDeleteSuccess = true
+        } catch {
+            print("清除資料失敗: \(error)")
+        }
     }
 
     /// 將目前本地 @State 屬性的值寫回 SwiftData 使用者設定物件並儲存

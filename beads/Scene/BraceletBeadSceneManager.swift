@@ -94,7 +94,7 @@ final class BraceletBeadSceneManager {
         let cameraNode = SCNNode()
         cameraNode.camera = SCNCamera()
         cameraNode.camera?.fieldOfView = 75
-        cameraNode.position = SCNVector3(0, 0, 6.5)
+        cameraNode.position = SCNVector3(0, 0, 7.5)
         cameraNode.eulerAngles = SCNVector3(0, 0, 0)
         cameraNode.name = "camera"
         scene.rootNode.addChildNode(cameraNode)

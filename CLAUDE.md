@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **beads** is a SwiftUI + SwiftData iOS/macOS/visionOS app. Currently at the Xcode template stage with basic CRUD functionality for timestamped items.
 
-- **Bundle ID**: `com.firstfu.tw.beads`
+- **Bundle ID**: `com.example.buddhistPrayerBeads`
 - **Swift Version**: 5.0
 - **Minimum Deployment Target**: iOS 26.2 / macOS (auto SDK)
 - **Supported Platforms**: iPhone, iPad, Mac, visionOS

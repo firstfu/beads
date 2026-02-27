@@ -151,7 +151,7 @@ struct PracticeView: View {
             UIApplication.shared.isIdleTimerDisabled = false
             #endif
         }
-        .onChange(of: allSettings.first?.currentBeadStyle) {
+        .onChange(of: allSettings.first?.currentBeadStyle) { _, newValue in
             sceneManager.materialType = currentMaterialType
             verticalSceneManager.materialType = currentMaterialType
             braceletSceneManager.materialType = currentMaterialType
