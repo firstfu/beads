@@ -147,7 +147,7 @@ final class BraceletBeadSceneManager {
         // tiltNode 負責 Y 軸傾斜 + X 軸偏移置中
         tiltNode.name = "tilt_container"
         tiltNode.eulerAngles = SCNVector3(0, yTilt, 0)
-        tiltNode.position = SCNVector3(0.5, 0, 0)
+        tiltNode.position = SCNVector3(0.5, 0.5, 0)
         scene.rootNode.addChildNode(tiltNode)
 
         // beadRingNode 只負責 Z 軸旋轉（撥珠滑動）
