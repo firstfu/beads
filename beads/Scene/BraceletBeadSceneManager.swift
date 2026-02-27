@@ -97,13 +97,25 @@ final class BraceletBeadSceneManager {
         cameraNode.position = SCNVector3(0, 0, 7.5)
         cameraNode.eulerAngles = SCNVector3(0, 0, 0)
         cameraNode.name = "camera"
+
+        // 景深效果 — 前排佛珠清晰、後排微模糊，增強空間感
+        cameraNode.camera?.wantsDepthOfField = true
+        cameraNode.camera?.focusDistance = 7.5
+        cameraNode.camera?.fStop = 5.6
+        cameraNode.camera?.apertureBladeCount = 6
+
+        // SSAO — 佛珠之間自然產生環境遮蔽陰影
+        cameraNode.camera?.screenSpaceAmbientOcclusionIntensity = 0.5
+        cameraNode.camera?.screenSpaceAmbientOcclusionRadius = 5.0
+        cameraNode.camera?.screenSpaceAmbientOcclusionDepthThreshold = 0.2
+
         scene.rootNode.addChildNode(cameraNode)
 
         // 環境光 — 柔和的整體照明
         let ambientLight = SCNNode()
         ambientLight.light = SCNLight()
         ambientLight.light?.type = .ambient
-        ambientLight.light?.intensity = 400
+        ambientLight.light?.intensity = 300
         #if os(macOS)
             ambientLight.light?.color = NSColor(white: 0.9, alpha: 1.0)
         #else
@@ -132,7 +144,7 @@ final class BraceletBeadSceneManager {
         let rimLight = SCNNode()
         rimLight.light = SCNLight()
         rimLight.light?.type = .directional
-        rimLight.light?.intensity = 150
+        rimLight.light?.intensity = 250
         rimLight.eulerAngles = SCNVector3(0, Float.pi, 0)
         scene.rootNode.addChildNode(rimLight)
 
