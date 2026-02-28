@@ -41,6 +41,13 @@ final class VerticalBeadSceneManager {
     /// 佛珠直列容器節點 - 沿 Y 軸平移此節點以模擬捲動效果
     private let beadColumnNode = SCNNode()
 
+    /// 共用的佛珠 geometry（所有非高亮珠子共享）
+    private var sharedBeadGeometry: SCNSphere!
+    /// 目前高亮的 geometry 副本
+    private var highlightedGeometry: SCNSphere?
+    /// 上一個高亮珠子的索引
+    private var previousHighlightIndex: Int = -1
+
     /// 每顆佛珠的間距（供手勢處理使用）
     var spacingPerBead: Float { beadSpacing }
 
@@ -133,17 +140,18 @@ final class VerticalBeadSceneManager {
         scene.rootNode.addChildNode(beadColumnNode)
 
         let beadGeometry = SCNSphere(radius: CGFloat(beadRadius))
-        beadGeometry.segmentCount = 48
+        beadGeometry.segmentCount = 32
+        sharedBeadGeometry = beadGeometry
 
         let material = SCNMaterial()
         materialType.applyTo(material)
         beadGeometry.materials = [material]
 
-        // 沿 Y 軸排列所有佛珠，索引 0 在頂部（y = 0），向下遞減
+        // 沿 Y 軸排列所有佛珠，索引 0 在頂部（y = 0），向下遞減（共用 geometry）
         for i in 0..<beadCount {
             let y = -Float(i) * beadSpacing
 
-            let node = SCNNode(geometry: beadGeometry.copy() as? SCNGeometry)
+            let node = SCNNode(geometry: beadGeometry)
             node.position = SCNVector3(0, y, 0)
             node.name = "bead_\(i)"
             beadColumnNode.addChildNode(node)
@@ -173,37 +181,55 @@ final class VerticalBeadSceneManager {
     }
 
     /// 高亮顯示目前佛珠
-    /// 為目前佛珠加上金色發光效果，其餘佛珠移除發光，帶 0.15 秒動畫
+    /// 將目前佛珠切換至獨立的高亮 geometry（帶金色發光），舊高亮珠子還原為共用 geometry
     private func highlightCurrentBead() {
-        for (i, node) in beadNodes.enumerated() {
-            guard let material = node.geometry?.materials.first else { continue }
-            SCNTransaction.begin()
-            SCNTransaction.animationDuration = 0.15
-            if i == currentBeadIndex {
-                #if os(macOS)
-                    material.emission.contents = NSColor(red: 0.8, green: 0.6, blue: 0.2, alpha: 1.0)
-                #else
-                    material.emission.contents = UIColor(red: 0.8, green: 0.6, blue: 0.2, alpha: 1.0)
-                #endif
-                material.emission.intensity = 0.4
-            } else {
-                #if os(macOS)
-                    material.emission.contents = NSColor.black
-                #else
-                    material.emission.contents = UIColor.black
-                #endif
-                material.emission.intensity = 0.0
-            }
-            SCNTransaction.commit()
+        SCNTransaction.begin()
+        SCNTransaction.animationDuration = 0.15
+
+        // 還原上一顆高亮珠子回共用 geometry
+        if previousHighlightIndex >= 0, previousHighlightIndex < beadNodes.count {
+            beadNodes[previousHighlightIndex].geometry = sharedBeadGeometry
         }
+
+        guard currentBeadIndex < beadNodes.count else {
+            SCNTransaction.commit()
+            return
+        }
+        let node = beadNodes[currentBeadIndex]
+
+        // 為新的高亮珠子建立獨立 geometry 副本
+        let highlightGeo = sharedBeadGeometry.copy() as! SCNSphere
+        let highlightMat = SCNMaterial()
+        materialType.applyTo(highlightMat)
+        #if os(macOS)
+            highlightMat.emission.contents = NSColor(red: 0.8, green: 0.6, blue: 0.2, alpha: 1.0)
+        #else
+            highlightMat.emission.contents = UIColor(red: 0.8, green: 0.6, blue: 0.2, alpha: 1.0)
+        #endif
+        highlightMat.emission.intensity = 0.4
+        highlightGeo.materials = [highlightMat]
+        highlightedGeometry = highlightGeo
+
+        node.geometry = highlightGeo
+        SCNTransaction.commit()
+
+        previousHighlightIndex = currentBeadIndex
     }
 
-    /// 套用材質至所有佛珠
+    /// 套用材質至所有佛珠（更新共用 geometry 即可影響所有非高亮珠子）
     private func applyMaterial() {
-        for node in beadNodes {
-            if let geometry = node.geometry, let material = geometry.materials.first {
-                materialType.applyTo(material)
-            }
+        if let material = sharedBeadGeometry.materials.first {
+            materialType.applyTo(material)
+        }
+        // 同步更新高亮珠子的材質
+        if let highlightMat = highlightedGeometry?.materials.first {
+            materialType.applyTo(highlightMat)
+            #if os(macOS)
+                highlightMat.emission.contents = NSColor(red: 0.8, green: 0.6, blue: 0.2, alpha: 1.0)
+            #else
+                highlightMat.emission.contents = UIColor(red: 0.8, green: 0.6, blue: 0.2, alpha: 1.0)
+            #endif
+            highlightMat.emission.intensity = 0.4
         }
     }
 
@@ -267,7 +293,7 @@ final class VerticalBeadSceneManager {
 
     /// 重新定位佛珠以實現無限循環滾動
     /// 將滾出可見區域的佛珠環繞到另一端，使 108 顆佛珠形成無縫循環
-    /// 利用模數算術讓每顆佛珠始終出現在最接近相機中心的位置
+    /// 效能優化：僅對位置需要變更的珠子更新，避免不必要的 SceneKit 屬性寫入
     private func repositionBeadsForWrapping() {
         let totalLength = Float(beadCount) * beadSpacing
         let cameraLocalY = -panTranslation
@@ -276,7 +302,11 @@ final class VerticalBeadSceneManager {
             let baseY = -Float(i) * beadSpacing
             let offset = round((cameraLocalY - baseY) / totalLength)
             let wrappedY = baseY + offset * totalLength
-            node.position = SCNVector3(0, wrappedY, 0)
+
+            // 僅在珠子需要環繞時才更新位置
+            if abs(node.position.y - wrappedY) > 0.001 {
+                node.position = SCNVector3(0, wrappedY, 0)
+            }
         }
     }
 

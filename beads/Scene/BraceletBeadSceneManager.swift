@@ -129,7 +129,7 @@ final class BraceletBeadSceneManager {
         keyLight.light?.type = .directional
         keyLight.light?.intensity = 800
         keyLight.light?.castsShadow = true
-        keyLight.light?.shadowMapSize = CGSize(width: 2048, height: 2048)
+        keyLight.light?.shadowMapSize = CGSize(width: 1024, height: 1024)
         keyLight.light?.shadowRadius = 3.0
         #if os(macOS)
             keyLight.light?.shadowColor = NSColor(white: 0, alpha: 0.45)
@@ -147,21 +147,13 @@ final class BraceletBeadSceneManager {
         fillLight.eulerAngles = SCNVector3(-Float.pi / 8, -Float.pi / 2.5, 0)
         scene.rootNode.addChildNode(fillLight)
 
-        // Top Accent — 從正上方均勻照亮所有佛珠頂部，解決後排太暗問題
+        // Top Accent — 從正上方均勻照亮所有佛珠頂部（合併 Rim light 的補償強度）
         let topAccent = SCNNode()
         topAccent.light = SCNLight()
         topAccent.light?.type = .directional
-        topAccent.light?.intensity = 200
+        topAccent.light?.intensity = 300
         topAccent.eulerAngles = SCNVector3(-Float.pi / 2, 0, 0)
         scene.rootNode.addChildNode(topAccent)
-
-        // Rim light — 從後方偏左下打光，產生邊緣輪廓高光
-        let rimLight = SCNNode()
-        rimLight.light = SCNLight()
-        rimLight.light?.type = .directional
-        rimLight.light?.intensity = 180
-        rimLight.eulerAngles = SCNVector3(Float.pi / 12, Float.pi + Float.pi / 6, 0)
-        scene.rootNode.addChildNode(rimLight)
 
         createBeads()
         createString()
@@ -183,19 +175,19 @@ final class BraceletBeadSceneManager {
         tiltNode.addChildNode(beadRingNode)
 
         let beadGeometry = SCNSphere(radius: CGFloat(beadRadius))
-        beadGeometry.segmentCount = 48
+        beadGeometry.segmentCount = 32
 
         let material = SCNMaterial()
         materialType.applyTo(material)
         beadGeometry.materials = [material]
 
-        // 將佛珠均勻分布在圓環容器內
+        // 將佛珠均勻分布在圓環容器內（共用同一個 geometry 實例）
         for i in 0..<displayCount {
             let angle = Float(i) / Float(displayCount) * Float.pi * 2 + Float.pi / 2
             let x = circleRadius * cos(angle)
             let y = circleRadius * sin(angle)
 
-            let node = SCNNode(geometry: beadGeometry.copy() as? SCNGeometry)
+            let node = SCNNode(geometry: beadGeometry)
             node.position = SCNVector3(x, y, 0)
             node.name = "bead_\(i)"
             beadRingNode.addChildNode(node)
@@ -227,13 +219,10 @@ final class BraceletBeadSceneManager {
         // 不做放大效果（與環形模式一致）
     }
 
-    /// 套用材質至所有佛珠
-    /// 將目前 materialType 的屬性套用到所有佛珠，母珠（bead_0）使用刻印卍字材質
+    /// 套用材質至所有佛珠（共用 geometry 只需更新一次）
     private func applyMaterial() {
-        for node in beadNodes {
-            if let geometry = node.geometry, let material = geometry.materials.first {
-                materialType.applyTo(material)
-            }
+        if let material = beadNodes.first?.geometry?.materials.first {
+            materialType.applyTo(material)
         }
     }
 

@@ -51,12 +51,12 @@ struct PracticeView: View {
 
     /// 修行邏輯的 ViewModel，管理計數、回合數等狀態
     @State private var viewModel = PracticeViewModel()
-    /// 環形佛珠 3D 場景管理器
-    @State private var sceneManager = BeadSceneManager()
-    /// 直列佛珠 3D 場景管理器
-    @State private var verticalSceneManager = VerticalBeadSceneManager()
-    /// 手串佛珠 3D 場景管理器
-    @State private var braceletSceneManager = BraceletBeadSceneManager()
+    /// 環形佛珠 3D 場景管理器（延遲初始化，僅在使用時建立）
+    @State private var sceneManager: BeadSceneManager?
+    /// 直列佛珠 3D 場景管理器（延遲初始化，僅在使用時建立）
+    @State private var verticalSceneManager: VerticalBeadSceneManager?
+    /// 手串佛珠 3D 場景管理器（延遲初始化，僅在使用時建立）
+    @State private var braceletSceneManager: BraceletBeadSceneManager?
     /// 觸感回饋服務，負責撥珠和完成回合時的震動回饋
     @State private var hapticService = HapticService()
     /// 音訊服務實例，從環境中注入，用於播放撥珠音效和背景音樂
@@ -131,14 +131,12 @@ struct PracticeView: View {
             let beadCount = currentBeadsPerRound
             if viewModel.beadsPerRound != beadCount {
                 viewModel.beadsPerRound = beadCount
-                sceneManager = BeadSceneManager(beadCount: beadCount)
-                verticalSceneManager = VerticalBeadSceneManager(beadCount: beadCount)
-                braceletSceneManager = BraceletBeadSceneManager(beadCount: beadCount)
+                // 清空既有管理器，確保以新珠數重建
+                sceneManager = nil
+                verticalSceneManager = nil
+                braceletSceneManager = nil
             }
-
-            sceneManager.materialType = currentMaterialType
-            verticalSceneManager.materialType = currentMaterialType
-            braceletSceneManager.materialType = currentMaterialType
+            ensureCurrentSceneManager()
             viewModel.startSession(mantraName: "南無阿彌陀佛")
             viewModel.loadTodayStats(modelContext: modelContext)
             #if os(iOS)
@@ -152,30 +150,30 @@ struct PracticeView: View {
             #endif
         }
         .onChange(of: allSettings.first?.currentBeadStyle) { _, newValue in
-            sceneManager.materialType = currentMaterialType
-            verticalSceneManager.materialType = currentMaterialType
-            braceletSceneManager.materialType = currentMaterialType
+            sceneManager?.materialType = currentMaterialType
+            verticalSceneManager?.materialType = currentMaterialType
+            braceletSceneManager?.materialType = currentMaterialType
+        }
+        .onChange(of: allSettings.first?.displayMode) { _, _ in
+            ensureCurrentSceneManager()
         }
         .onChange(of: allSettings.first?.beadsPerRound) { _, newValue in
             guard let newValue else { return }
             viewModel.updateBeadsPerRound(newValue)
 
-            // 場景管理器的 beadCount 是 let，需要重建實例
-            let material = currentMaterialType
-            sceneManager = BeadSceneManager(beadCount: newValue)
-            sceneManager.materialType = material
-            verticalSceneManager = VerticalBeadSceneManager(beadCount: newValue)
-            verticalSceneManager.materialType = material
-            braceletSceneManager = BraceletBeadSceneManager(beadCount: newValue)
-            braceletSceneManager.materialType = material
+            // 場景管理器的 beadCount 是 let，需要清空並重建
+            sceneManager = nil
+            verticalSceneManager = nil
+            braceletSceneManager = nil
+            ensureCurrentSceneManager()
         }
         .alert("確定要重置計數嗎？", isPresented: $showResetConfirm) {
             Button("取消", role: .cancel) { }
             Button("重置", role: .destructive) {
                 viewModel.resetCount()
-                sceneManager.currentBeadIndex = 0
-                verticalSceneManager.currentBeadIndex = 0
-                braceletSceneManager.currentBeadIndex = 0
+                sceneManager?.currentBeadIndex = 0
+                verticalSceneManager?.currentBeadIndex = 0
+                braceletSceneManager?.currentBeadIndex = 0
             }
         } message: {
             Text("此操作將清除本次修行的所有計數。")
@@ -188,16 +186,16 @@ struct PracticeView: View {
                         dedicationText: text,
                         dedicationTarget: target
                     )
-                    sceneManager.currentBeadIndex = 0
-                    verticalSceneManager.currentBeadIndex = 0
-                    braceletSceneManager.currentBeadIndex = 0
+                    sceneManager?.currentBeadIndex = 0
+                    verticalSceneManager?.currentBeadIndex = 0
+                    braceletSceneManager?.currentBeadIndex = 0
                     showDedicationSheet = false
                 },
                 onSkip: {
                     viewModel.endSessionAndRestart(modelContext: modelContext)
-                    sceneManager.currentBeadIndex = 0
-                    verticalSceneManager.currentBeadIndex = 0
-                    braceletSceneManager.currentBeadIndex = 0
+                    sceneManager?.currentBeadIndex = 0
+                    verticalSceneManager?.currentBeadIndex = 0
+                    braceletSceneManager?.currentBeadIndex = 0
                     showDedicationSheet = false
                 }
             )
@@ -211,20 +209,26 @@ struct PracticeView: View {
     private var beadSceneContent: some View {
         switch displayMode {
         case .vertical:
-            VerticalBeadSceneView(sceneManager: verticalSceneManager, onBeadAdvance: {
-                onBeadAdvance()
-            }, fastScrollMode: fastScrollMode)
-            .ignoresSafeArea()
+            if let manager = verticalSceneManager {
+                VerticalBeadSceneView(sceneManager: manager, onBeadAdvance: {
+                    onBeadAdvance()
+                }, fastScrollMode: fastScrollMode)
+                .ignoresSafeArea()
+            }
         case .circular:
-            BeadSceneView(sceneManager: sceneManager, onBeadAdvance: {
-                onBeadAdvance()
-            }, fastScrollMode: fastScrollMode)
-            .ignoresSafeArea()
+            if let manager = sceneManager {
+                BeadSceneView(sceneManager: manager, onBeadAdvance: {
+                    onBeadAdvance()
+                }, fastScrollMode: fastScrollMode)
+                .ignoresSafeArea()
+            }
         case .bracelet:
-            BraceletBeadSceneView(sceneManager: braceletSceneManager, onBeadAdvance: {
-                onBeadAdvance()
-            }, fastScrollMode: fastScrollMode)
-            .ignoresSafeArea()
+            if let manager = braceletSceneManager {
+                BraceletBeadSceneView(sceneManager: manager, onBeadAdvance: {
+                    onBeadAdvance()
+                }, fastScrollMode: fastScrollMode)
+                .ignoresSafeArea()
+            }
         }
     }
 
@@ -235,14 +239,14 @@ struct PracticeView: View {
     /// - 顯示「功德+1」上浮淡出動畫
     private func onBeadAdvance() {
         viewModel.incrementBead()
-        sceneManager.currentBeadIndex = viewModel.currentBeadIndex
-        verticalSceneManager.currentBeadIndex = viewModel.currentBeadIndex
-        braceletSceneManager.currentBeadIndex = viewModel.currentBeadIndex
+        sceneManager?.currentBeadIndex = viewModel.currentBeadIndex
+        verticalSceneManager?.currentBeadIndex = viewModel.currentBeadIndex
+        braceletSceneManager?.currentBeadIndex = viewModel.currentBeadIndex
         hapticService.playBeadTap()
         audioService.playBeadClick()
 
         if viewModel.didCompleteRound {
-            verticalSceneManager.resetColumnPosition()
+            verticalSceneManager?.resetColumnPosition()
             hapticService.playRoundComplete()
             audioService.playRoundComplete()
         }
@@ -258,6 +262,40 @@ struct PracticeView: View {
             showMeritPopup = false
             meritPopupOffset = 0
             meritPopupOpacity = 1.0
+        }
+    }
+    // MARK: - 場景管理器延遲初始化
+
+    /// 確保目前顯示模式對應的場景管理器已初始化
+    /// 僅建立目前需要的場景管理器，其餘設為 nil 以節省記憶體
+    private func ensureCurrentSceneManager() {
+        let beadCount = currentBeadsPerRound
+        let material = currentMaterialType
+        switch displayMode {
+        case .vertical:
+            if verticalSceneManager == nil {
+                let manager = VerticalBeadSceneManager(beadCount: beadCount)
+                manager.materialType = material
+                verticalSceneManager = manager
+            }
+            sceneManager = nil
+            braceletSceneManager = nil
+        case .circular:
+            if sceneManager == nil {
+                let manager = BeadSceneManager(beadCount: beadCount)
+                manager.materialType = material
+                sceneManager = manager
+            }
+            verticalSceneManager = nil
+            braceletSceneManager = nil
+        case .bracelet:
+            if braceletSceneManager == nil {
+                let manager = BraceletBeadSceneManager(beadCount: beadCount)
+                manager.materialType = material
+                braceletSceneManager = manager
+            }
+            sceneManager = nil
+            verticalSceneManager = nil
         }
     }
 }

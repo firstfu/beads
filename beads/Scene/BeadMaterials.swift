@@ -128,6 +128,38 @@ enum BeadMaterialType: String, CaseIterable, Identifiable {
         }
     }
 
+    // MARK: - 紋理快取
+
+    /// 紋理快取字典，避免重複載入相同的紋理圖片
+    private static var textureCache: [String: PlatformImage] = [:]
+
+    /// 從快取中取得紋理圖片，若不存在則從 Asset Catalog 載入並存入快取
+    private static func cachedTexture(named name: String) -> PlatformImage? {
+        if let cached = textureCache[name] {
+            return cached
+        }
+        if let image = PlatformImage(named: name) {
+            textureCache[name] = image
+            return image
+        }
+        return nil
+    }
+
+    /// 預載入所有材質的紋理圖片至快取中（可在 App 啟動時呼叫）
+    static func preloadTextures() {
+        for material in BeadMaterialType.allCases {
+            _ = cachedTexture(named: material.diffuseTextureName)
+            _ = cachedTexture(named: material.normalTextureName)
+        }
+    }
+
+    /// 清除紋理快取，釋放記憶體（可在收到記憶體警告時呼叫）
+    static func clearCache() {
+        textureCache.removeAll()
+    }
+
+    // MARK: - 材質套用
+
     /// 將材質屬性套用至 SceneKit 材質物件
     /// 設定物理基礎渲染模型、漫反射貼圖（fallback 至純色）、法線貼圖、粗糙度、金屬度，
     /// 若為琥珀蜜蠟則額外設定透明度與雙層透明模式
@@ -135,15 +167,15 @@ enum BeadMaterialType: String, CaseIterable, Identifiable {
     func applyTo(_ material: SCNMaterial) {
         material.lightingModel = .physicallyBased
 
-        // Diffuse: prefer texture, fallback to solid color
-        if let diffuseImage = PlatformImage(named: diffuseTextureName) {
+        // Diffuse: 優先從快取取得紋理，fallback 至純色
+        if let diffuseImage = Self.cachedTexture(named: diffuseTextureName) {
             material.diffuse.contents = diffuseImage
         } else {
             material.diffuse.contents = diffuseColor
         }
 
-        // Normal map: apply if available
-        if let normalImage = PlatformImage(named: normalTextureName) {
+        // Normal map: 優先從快取取得
+        if let normalImage = Self.cachedTexture(named: normalTextureName) {
             material.normal.contents = normalImage
             material.normal.intensity = 1.5
         }

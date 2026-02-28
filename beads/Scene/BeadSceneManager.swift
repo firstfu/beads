@@ -133,24 +133,23 @@ final class BeadSceneManager {
         scene.rootNode.addChildNode(beadRingNode)
 
         let beadGeometry = SCNSphere(radius: CGFloat(beadRadius))
-        beadGeometry.segmentCount = 48
+        beadGeometry.segmentCount = 32
 
         let material = SCNMaterial()
         materialType.applyTo(material)
         beadGeometry.materials = [material]
 
-        // 將佛珠均勻分布在圓環容器內
+        // 將佛珠均勻分布在圓環容器內（共用同一個 geometry 實例）
         for i in 0..<displayCount {
             let angle = Float(i) / Float(displayCount) * Float.pi * 2 + Float.pi / 2
             let x = circleRadius * cos(angle)
             let y = circleRadius * sin(angle)
 
-            let node = SCNNode(geometry: beadGeometry.copy() as? SCNGeometry)
+            let node = SCNNode(geometry: beadGeometry)
             node.position = SCNVector3(x, y, 0)
             node.name = "bead_\(i)"
             beadRingNode.addChildNode(node)
             beadNodes.append(node)
-
         }
 
     }
@@ -179,12 +178,10 @@ final class BeadSceneManager {
         // 不做放大效果
     }
 
-    /// 套用材質至所有佛珠
+    /// 套用材質至所有佛珠（共用 geometry 只需更新一次）
     private func applyMaterial() {
-        for node in beadNodes {
-            if let geometry = node.geometry, let material = geometry.materials.first {
-                materialType.applyTo(material)
-            }
+        if let material = beadNodes.first?.geometry?.materials.first {
+            materialType.applyTo(material)
         }
     }
 
